@@ -1,3 +1,5 @@
+// special looper
+Machine.add("LiSaSort.ck");
 // sorting class
 Machine.add("HeapSort.ck");
 // array functions
@@ -8,4 +10,4 @@ Machine.add("HeapSend.ck");
 Machine.add("Patterns.ck");
 
 // main program
-Machine.add("heap_sort.ck");
+Machine.add("tail-sort.ck");

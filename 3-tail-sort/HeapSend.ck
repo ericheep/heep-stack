@@ -1,11 +1,10 @@
 public class HeapSend {
     HeapSort hs;
+    LiSaSort ls;
     ArrayFunctions af;
     
     OscOut out;
     ("localhost", 12001) => out.dest;
-
-    500::ms => dur global_beat;
 
     // sends array to Processing
     private void arraySend(string addr, int ref[], int arr[]) {
@@ -56,14 +55,17 @@ public class HeapSend {
         arraySend(addr + "L", prv_ordered, ref_prv);
         arraySend(addr + "R", base, ref_cur);
 
-        // metronome
-        metroSend(metro, ref_prv.cap()/2 + ref_cur.cap()/2, beat, 0);
-        
         // updates current to start with base values
         for (int i; i < array_size; i++) {
             base[i] => cur[i];
         }
 
+        // LiSa prime function, before every metro
+        ls.prime(addr, prv_ordered, base, ref_prv, ref_cur);
+
+        // metronome
+        metroSend(addr, ref_prv, ref_cur, beat, 0);
+        
         // sorting logic
         for (1 => int i; i < array_size; i++) {
             hs.heapSort(base, i) @=> base;
@@ -84,27 +86,36 @@ public class HeapSend {
             // send to Processing
             arraySend(addr + "L", prv, ref_cur);
             arraySend(addr + "R", cur, ref_cur);
+     
+            // LiSa prime function, before every metro
+            ls.prime(addr, prv, cur, ref_cur, ref_cur);
 
             // metronome
-            metroSend(metro, array_size, beat, i);
+            metroSend(addr, prv, cur, beat, i % 2);
         }
 
         // outputs array for next segment
         return ref_cur;
     }
 
-    private void metroSend(string addr, int array_size, dur beat, int side) {
-       for (int i; i < array_size; i++) {
-            out.start(addr);
-            out.add(side % 2);
+    // sends out 16th notes
+    private void metroSend(string addr, int left_arr[], int right_arr[], dur beat, int side) {
+        int array_size;
+        if (side == 0) {
+            left_arr.cap() => array_size;
+        }
+        else if (side == 1) {
+            right_arr.cap() => array_size;
+        }
+
+        for (int i; i < array_size * 2; i++) {
+            out.start(addr + "Metro");
+            out.add(side);
             out.add(i);
             out.send();
 
-            // faster and faster
-            if (global_beat > 350::ms) {
-                global_beat - 0.10::ms => global_beat;
-            }
-            global_beat => now;  
+            ls.eval(addr, i, beat, side);
+            beat => now;  
         }
     }
 }

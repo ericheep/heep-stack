@@ -1,11 +1,11 @@
 public class Patterns {
 
     fun int[] patternA() {
-        return [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
+        return [1, 0, 3, 0];
     }
 
     fun int[] patternB() {
-        return [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1];
+        return [1, 0, 0, 0, 0, 0];
     }
 
     fun int[] patternC() {
