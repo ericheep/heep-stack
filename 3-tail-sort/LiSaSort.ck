@@ -1,12 +1,35 @@
 public class LiSaSort {
 
+    3 => int num_mics;
+
     // two LiSa arrays, one per player
-    LiSa top_mic[3];
-    LiSa bot_mic[3];
+    LiSa top_mic[num_mics];
+    LiSa bot_mic[num_mics];
+
+    Pan2 left;
+    Pan2 right;
+
+    // intializing parameters
+    for (int i; i < num_mics; i++) {
+        adc => top_mic[i] => left;
+        adc => bot_mic[i] => right;
+        top_mic[i].loop(1);
+        bot_mic[i].loop(1);
+        top_mic[i].bi(1);
+        bot_mic[i].bi(1);
+    }
+
+    // hard panning left and right
+    left.pan(-1.0);
+    right.pan(1.0);
+  
+    // chucking to dac
+    left => dac;
+    right => dac;
 
     // switch arrays, one per player
-    int top_switch[3];
-    int bot_switch[3];
+    int top_active[3];
+    int bot_active[3];
  
     // global arrays for top
     int top_l_global[0];
@@ -55,37 +78,78 @@ public class LiSaSort {
     }
 
     public void eval(string addr, int idx, dur beat, int side) {
-        if (idx % 2 == 0) {
-            if (side == 0) {
-                if (addr == "/top") {
-                    if (top_l_global[idx/2] > 0) {
-                        spork ~ record(top_l_global[idx/2]);
-                    }
-                }
-                if (addr == "/bot") {
-                    if (bot_l_global[idx/2] > 0) {
-                        spork ~ record(bot_l_global[idx/2]);
-                    }
+        if (side == 0) {
+            if (addr == "/top") {
+                if (top_l_global[idx] > 0) {
+                    (top_active[top_l_global[idx] - 1] + 1) % 2 => top_active[top_l_global[idx] - 1];
+                    spork ~ topRecord(top_l_global[idx] - 1, top_active[top_l_global[idx] - 1], beat);
                 }
             }
-            if (side == 1) {
-                if (addr == "/top") {
-                    if (top_r_global[idx/2] > 0) {
-                        spork ~ record(top_r_global[idx/2]);
-                    }
+            if (addr == "/bot") {
+                if (bot_l_global[idx] > 0) {
+                    (bot_active[bot_l_global[idx] - 1] + 1) % 2 => bot_active[bot_l_global[idx] - 1];
+                    spork ~ botRecord(bot_l_global[idx] - 1, bot_active[bot_l_global[idx] - 1], beat);
                 }
-                if (addr == "/bot") {
-                    if (bot_r_global[idx/2] > 0) {
-                        spork ~ record(bot_r_global[idx/2]);
-                    }
+            }
+        }
+        if (side == 1) {
+            if (addr == "/top") {
+                if (top_r_global[idx] > 0) {
+                    (top_active[top_r_global[idx] - 1] + 1) % 2 => top_active[top_r_global[idx] - 1];
+                    spork ~ topRecord(top_r_global[idx] - 1, top_active[top_r_global[idx] - 1], beat);
+                }
+            }
+            if (addr == "/bot") {
+                if (bot_r_global[idx] > 0) {
+                    (bot_active[bot_r_global[idx] - 1] + 1) % 2 => bot_active[bot_r_global[idx] - 1];
+                    spork ~ botRecord(bot_r_global[idx] - 1, bot_active[bot_r_global[idx] - 1], beat);
                 }
             }
         }
     }
 
-    private void record(int mode) {
-        <<< mode >>>;
+    
+    private void topRecord(int mode, int mod, dur beat) {
+        // only records last fourth of a beat
+        top_mic[mode].duration(beat);
+        beat/4.0 * 3 => now;
+        top_mic[mode].record(1);
+        beat/4.0 => now;
+        top_mic[mode].record(0);
+
+        top_mic[mode].loopEnd(beat/4.0);
+        top_mic[mode].play(1);
+
+        while (top_active[mode] == mod) {
+            top_mic[mode].rampUp(beat/8.0);
+            beat/2.0 - beat/8.0 => now;
+            top_mic[mode].rampDown(beat/8.0);
+            beat/8.0 => now;
+        }
+
+        top_mic[mode].play(0);
     }
+
+    private void botRecord(int mode, int mod, dur beat) {
+        // only records last fourth of a beat
+        bot_mic[mode].duration(beat);
+        beat/4.0 * 3 => now;
+        bot_mic[mode].record(1);
+        beat/4.0 => now;
+        bot_mic[mode].record(0);
+
+        bot_mic[mode].loopEnd(beat/4.0);
+        bot_mic[mode].play(1);
+
+        while (bot_active[mode] == mod) {
+            bot_mic[mode].rampUp(beat/8.0);
+            beat/2.0 - beat/8.0 => now;
+            bot_mic[mode].rampDown(beat/8.0);
+            beat/8.0 => now;
+        }
+        bot_mic[mode].play(0);
+    }
+
 
     // prints contents
     public void printArrays(int ref_prv[], int prv[], int ref_cur[], int cur[]) {

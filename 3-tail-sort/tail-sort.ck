@@ -14,22 +14,24 @@ int lead_off[8];
 
 fun void top() {
     int top_ref_prv[];
-    h.arraySort("/top", beat, lead_off, p.patternA(0)) @=> top_ref_prv;
+    h.arraySort("/top", beat, lead_off, p.patternC()) @=> top_ref_prv;
     while (true) {
-        h.arraySort("/top", beat, top_ref_prv, p.patternA(0)) @=> top_ref_prv;
-        h.arraySort("/top", beat, top_ref_prv, p.patternB(0)) @=> top_ref_prv;
+        h.arraySort("/top", beat, top_ref_prv, p.patternC()) @=> top_ref_prv;
+        h.arraySort("/top", beat, top_ref_prv, p.patternC()) @=> top_ref_prv;
     }
 }
 
 fun void bot() {
     int bot_ref_prv[];
+    h.arraySort("/bot", beat, lead_off, p.patternC()) @=> bot_ref_prv;
     while (true) {
-        h.arraySort("/bot", beat, lead_off, p.patternC(2)) @=> bot_ref_prv;
+        h.arraySort("/bot", beat, bot_ref_prv, p.patternC()) @=> bot_ref_prv;
+        h.arraySort("/bot", beat, bot_ref_prv, p.patternC()) @=> bot_ref_prv;
     }
 }
 
 fun void go() {
-    <<< "~ here we go", "" >>>;
+    <<< "~ here we go ~", "" >>>;
     spork ~ top();
     spork ~ bot();
 }

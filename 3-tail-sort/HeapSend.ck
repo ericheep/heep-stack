@@ -113,8 +113,9 @@ public class HeapSend {
             out.add(side);
             out.add(i);
             out.send();
-
-            ls.eval(addr, i, beat, side);
+            if (i % 2 == 0) {
+                ls.eval(addr, i/2, beat, side);
+            }
             beat => now;  
         }
     }
