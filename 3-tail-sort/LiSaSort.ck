@@ -1,6 +1,7 @@
 public class LiSaSort {
-
-    3 => int num_mics;
+    ArrayFunctions a;
+    2 => int num_mics;
+    4 => int modes;
 
     // two LiSa arrays, one per player
     LiSa mic[num_mics][2];
@@ -27,7 +28,7 @@ public class LiSaSort {
     right => dac;
 
     // switch arrays, one per player
-    int active[3][2];
+    int active[modes][2];
  
     // global arrays for top
     int top_l_global[0];
@@ -37,7 +38,19 @@ public class LiSaSort {
     int bot_l_global[0];
     int bot_r_global[0];
 
-    // gets arrays ready for evaluation
+    // index arrays
+    int top_l_idx[][];
+    int top_r_idx[][];
+    int bot_l_idx[][];
+    int bot_r_idx[][];
+
+    // distance arrays
+    int top_l_dist[][];
+    int top_r_dist[][];
+    int bot_l_dist[][];
+    int bot_r_dist[][];
+
+    // creates arrays for sending, creates a second array for distances
     public void prime(string addr, int l_arr[], int r_arr[], int l_ref[], int r_ref[]) {
         if (addr == "/top") {
             l_arr.cap() => top_l_global.size;
@@ -73,41 +86,65 @@ public class LiSaSort {
                 }
             }
         }
+        
+        if (addr == "/top") {
+            // returns index positions of notes 
+            a.index(top_l_global, modes) @=> top_l_idx;
+            a.index(top_r_global, modes) @=> top_r_idx;
+            // returns distances of each note in each mode
+            a.distance(top_l_idx, top_r_idx, modes) @=> top_l_dist;
+            a.distance(top_r_idx, top_l_idx, modes) @=> top_r_dist;
+        }
+
+        if (addr == "/bot") {
+            // returns index positions of notes 
+            a.index(bot_l_global, modes) @=> bot_l_idx;
+            a.index(bot_r_global, modes) @=> top_r_idx;
+            // returns distances of each note in each mode
+            a.distance(bot_l_idx, bot_r_idx, modes) @=> bot_l_dist;
+            a.distance(bot_r_idx, bot_l_idx, modes) @=> bot_r_dist;
+        }
     }
 
     public void eval(string addr, int idx, dur beat, int side) {
+        int d;
         if (side == 0) {
             if (addr == "/top") {
+                top_l_dist[idx][top_l_global[idx]] => d;
                 if (top_l_global[idx] > 0) {
                     (active[top_l_global[idx] - 1][0] + 1) % 2 => active[top_l_global[idx] - 1][0];
-                    spork ~ record(top_l_global[idx] - 1, active[top_l_global[idx] - 1][0], beat, 0);
+                    spork ~ record(top_l_global[idx] - 1, active[top_l_global[idx] - 1][0], beat, 0, d);
                 }
             }
             if (addr == "/bot") {
+                bot_l_dist[idx][bot_l_global[idx]] => d;
                 if (bot_l_global[idx] > 0) {
                     (active[bot_l_global[idx] - 1][1] + 1) % 2 => active[bot_l_global[idx] - 1][1];
-                    spork ~ record(bot_l_global[idx] - 1, active[bot_l_global[idx] - 1][1], beat, 1);
+                    spork ~ record(bot_l_global[idx] - 1, active[bot_l_global[idx] - 1][1], beat, 1, d);
                 }
             }
         }
         if (side == 1) {
             if (addr == "/top") {
+                top_r_dist[idx][top_r_global[idx]] => d;
                 if (top_r_global[idx] > 0) {
                     (active[top_r_global[idx] - 1][0] + 1) % 2 => active[top_r_global[idx] - 1][0];
-                    spork ~ record(top_r_global[idx] - 1, active[top_r_global[idx] - 1][0], beat, 0);
+                    spork ~ record(top_r_global[idx] - 1, active[top_r_global[idx] - 1][0], beat, 0, d);
                 }
             }
             if (addr == "/bot") {
+                bot_r_dist[idx][bot_r_global[idx]] => d;
                 if (bot_r_global[idx] > 0) {
                     (active[bot_r_global[idx] - 1][1] + 1) % 2 => active[bot_r_global[idx] - 1][1];
-                    spork ~ record(bot_r_global[idx] - 1, active[bot_r_global[idx] - 1][1], beat, 1);
+                    spork ~ record(bot_r_global[idx] - 1, active[bot_r_global[idx] - 1][1], beat, 1, d);
                 }
             }
         }
     }
 
     
-    private void record(int mode, int mod, dur beat, int player) {
+    private void record(int mode, int mod, dur beat, int player, int dist) {
+        <<< dist >>>;
         // only records last fourth of a beat
         mic[mode][player].duration(beat);
         beat/4.0 * 3 => now;
@@ -127,48 +164,4 @@ public class LiSaSort {
 
         mic[mode][player].play(0);
     }
-
-    // prints contents
-    public void printArrays(int ref_prv[], int prv[], int ref_cur[], int cur[]) {
-         "[" => string print;
-         for (int i; i < prv.cap(); i++) {
-            prv[i] + "" +=> print;
-            if (i != prv.cap() - 1) {
-                ", " +=> print;
-            }
-        }
-        "] [" +=> print;
-        for (int i; i < ref_prv.cap(); i++) {
-            for (int j; j < ref_prv.cap(); j++) {
-                if (j == prv[i]) {
-                    ref_prv[j] + "" +=> print;
-                }
-            }
-            if (i != ref_prv.cap() - 1) {
-                ", " +=> print;
-            }
-        }
-        "] || [" +=> print;
-         for (int i; i < cur.cap(); i++) {
-            cur[i] + "" +=> print;
-            if (i != cur.cap() - 1) {
-                ", " +=> print;
-            }
-        }
-        "] [" +=> print;
-        for (int i; i < ref_cur.cap(); i++) {
-            for (int j; j < ref_cur.cap(); j++) {
-                if (j == cur[i]) {
-                    ref_cur[j] + "" +=> print;
-                }
-            }
-            if (i != ref_cur.cap() - 1) {
-                ", " +=> print;
-            }
-        }
-        "]" +=> print;
-        <<< print, "" >>>;
-    }
-
-
 }

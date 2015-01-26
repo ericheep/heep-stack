@@ -46,7 +46,7 @@ fun void bot() {
 fun void go() {
     <<< "~ here we go ~", "" >>>;
     spork ~ top();
-    spork ~ bot();
+    //spork ~ bot();
 }
 
 go();

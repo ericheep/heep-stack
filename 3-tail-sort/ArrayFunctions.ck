@@ -77,5 +77,62 @@ public class ArrayFunctions {
         }
         return arr;
     }
+
+
+    // returns the distances of values
+    fun int[][] distance(int idx_a[][], int idx_b[][], int modes) {
+        int dist[idx_a.cap()][modes];
+        int stop, val;
+
+        for (1 => int k; k < modes; k++) {
+            for (int i; i < idx_a.size(); i++) {
+                // resets stop point
+                0 => stop;
+
+                if (idx_a[i][k] > 0) {
+                    idx_a[i][k] => val;
+
+                    // loops through array searching for next 
+                    // value, then finds it's distance from val
+                    for (i + 1 => int j; j < idx_a.size(); j++) {
+                        if (idx_a[j][k] > 0) {
+                            idx_a[j][k] - val => dist[i][k];
+
+                            // sets stop point if found
+                            1 => stop;
+                            break;
+                        }
+                    }
+                   
+                    // only runs if a distance wasn't found in the previous loop
+                    if (stop != 1) {
+                        for (int j; j < idx_b.size(); j++) {
+                            if (idx_b[j][k] > 0) {
+                                idx_b[j][k] + idx_b.size() - val => dist[i][k];
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return dist;
+    }
+
+    // return new array with index locations
+    fun int[][] index(int arr[], int modes) {
+        int dist[arr.cap()][modes];
+
+        for (int i; i < arr.cap(); i++) {
+            for (1 => int j; j < modes; j++) {
+                if (arr[i] == j) {
+                    i + 1 => dist[i][j];
+                }
+            }
+        }
+
+        return dist;
+    }
 }
 
