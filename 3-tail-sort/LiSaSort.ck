@@ -1,16 +1,15 @@
 public class LiSaSort {
     ArrayFunctions a;
-    2 => int num_mics;
-    4 => int modes;
+    5 => int modes;
 
     // two LiSa arrays, one per player
-    LiSa mic[num_mics][2];
+    LiSa mic[modes][2];
 
     Pan2 left;
     Pan2 right;
 
     // intializing parameters
-    for (int i; i < num_mics; i++) {
+    for (int i; i < modes; i++) {
         adc => mic[i][0] => left;
         adc => mic[i][1] => right;
         mic[i][0].loop(1);
@@ -39,16 +38,16 @@ public class LiSaSort {
     int bot_r_global[0];
 
     // index arrays
-    int top_l_idx[][];
-    int top_r_idx[][];
-    int bot_l_idx[][];
-    int bot_r_idx[][];
+    int top_l_idx[0][modes];
+    int top_r_idx[0][modes];
+    int bot_l_idx[0][modes];
+    int bot_r_idx[0][modes];
 
     // distance arrays
-    int top_l_dist[][];
-    int top_r_dist[][];
-    int bot_l_dist[][];
-    int bot_r_dist[][];
+    int top_l_dist[0][modes];
+    int top_r_dist[0][modes];
+    int bot_l_dist[0][modes];
+    int bot_r_dist[0][modes];
 
     // creates arrays for sending, creates a second array for distances
     public void prime(string addr, int l_arr[], int r_arr[], int l_ref[], int r_ref[]) {
@@ -86,7 +85,7 @@ public class LiSaSort {
                 }
             }
         }
-        
+       
         if (addr == "/top") {
             // returns index positions of notes 
             a.index(top_l_global, modes) @=> top_l_idx;
@@ -144,22 +143,50 @@ public class LiSaSort {
 
     
     private void record(int mode, int mod, dur beat, int player, int dist) {
-        <<< dist >>>;
-        // only records last fourth of a beat
-        mic[mode][player].duration(beat);
-        beat/4.0 * 3 => now;
-        mic[mode][player].record(1);
-        beat/4.0 => now;
-        mic[mode][player].record(0);
+        // a few vars
+        5 * (mode + 1) => int num;
+        
+        // exponential vars
+        dur y;
+        dur echoes[num]; 
+        beat * (dist * 2) => dur length;
+        length/(num * 1.0) => dur beatTime;
+        
+        // intializing LiSa to record
+        mic[mode][player].duration(beat * dist);
 
-        mic[mode][player].loopEnd(beat/4.0);
-        mic[mode][player].play(1);
+        // builds our exponential array
+        for (int i; i < num; i++) {
+            Math.pow(Math.pow((1 + num),(1.0/num)), i + 1) - 1 => float beat;
+            beat * beatTime => dur x;
+            x - y => echoes[i];
+            beat * beatTime => y;
+        }
 
-        while (active[mode][player] == mod) {
-            mic[mode][player].rampUp(beat/8.0);
-            beat/2.0 - beat/8.0 => now;
-            mic[mode][player].rampDown(beat/8.0);
-            beat/8.0 => now;
+        // exponential decay
+        if (mode == 0 || mode == 1 || mode == 2) {
+            echoes[num - 1]/3.0 => now;
+            mic[mode][player].record(1); 
+            echoes[num - 1]/3.0 * 2.0 => now;
+            mic[mode][player].record(0);
+            mic[mode][player].play(1);
+            for (num - 2 => int i; i >= 0; i--) {
+                mic[mode][player].playPos(0::samp);
+                mic[mode][player].rampUp(echoes[i]/6.0);
+                echoes[i] - echoes[i]/6.0 => now;
+                mic[mode][player].rampDown(echoes[i]/6.0);
+                echoes[i]/6.0 => now;
+            }
+            mic[mode][player].play(0);
+        }
+
+        if (mode == 1) {
+        }
+
+        if (mode == 2) {
+        }
+
+        if (mode == 3) {
         }
 
         mic[mode][player].play(0);
