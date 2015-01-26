@@ -3,20 +3,19 @@
 public class ProgramNotes {
 
     fun string notes(string n) {
-        if (n == "impurities I/II") {
-            return "a two movement piece that highlights the
-            non-just temperment of the piano";
-        }
         if (n == "floor") {
             return "a piece for snare and _____";
         }
-        if (n == "sort") {
-            return "a prototype involving a generative score
-            and an assortment of flower pots, thanks be to David
-            Lang";
+        if (n == "impurities I/II") {
+            return "a two movement piece that pretends the
+            the piano were just intonated";
+        }
+        if (n == "sort I") {
+            return "a first of a generative score that guides
+            two hapless wits, thanks be to David Lang";
         }
         if (n == "thank you Peter Ablinger") {
-            return "I for one, welcome our piano overlords";
+            return "this one probably won't bet finished";
         }
         if (n == "apollo 11 saturn V") {
             return "a tribute to both live sampling and humanity's 
