@@ -3,8 +3,8 @@
 
 ProgramNotes pn;
 
-["impurities I/II", 
-"floor", 
+["floor", 
+"impurities I/II",
 "sort",
 "thank you Peter Ablinger", 
 "apollo 11 saturn V", 
