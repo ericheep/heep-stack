@@ -26,7 +26,7 @@ public class CalorkOsc {
 
     // sets your name for outgoing messages, defaults port to 57120
     public void myAddr(string id) {
-        init(id, listening_port);    
+        myAddr(id, listening_port);    
     }
 
     // overloaded myAddr, in case you'd want to change the port
@@ -152,34 +152,3 @@ public class CalorkOsc {
         }
     }
 }
-
-/*
-// some example code
-// shows how to set up and get params
-
-CalorkOsc c;
-
-// set your sending address
-c.myAddr("/eric");
-
-// add one IP and address at a time, two string arguments
-c.addIp("169.254.87.91", "/justin");
-c.addIp("169.254.223.167", "/danny");
-c.addIp("169.254.207.86", "/mike");
-c.addIp("169.254.74.231", "/shaurjya");
-c.addIp("169.254.24.203", "/ed");
-
-// notice the brackets
-// you'll have to setup your parameters as an array of strings
-c.setParams(["/freq", "/vol", "/chaos"]);
-
-spork ~ c.recv();
-
-while (true) {
-    // c.send("/all", "/vol", 0.1);
-    // c.send("/random", "/vol", 0.1);
-    // c.send("/ed", "/freq", 0.518);
-    <<< c.getParam("/ed", "/freq") >>>;
-    100::ms => now;
-}
-*/
