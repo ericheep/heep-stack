@@ -5,7 +5,7 @@ ProgramNotes pn;
 
 ["floor", 
 "impurities I/II",
-"sort",
+"sort I",
 "thank you Peter Ablinger", 
 "apollo 11 saturn V", 
 "binary sines"] @=> string program[];
