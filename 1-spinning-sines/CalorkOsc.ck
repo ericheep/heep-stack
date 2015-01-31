@@ -24,6 +24,9 @@ public class CalorkOsc {
     float params[0][NUM_ADDRS];
     string param_list[0];
 
+    // for events outside of the class
+    Event e;
+
     // sets your name for outgoing messages, defaults port to 57120
     public void myAddr(string id) {
         myAddr(id, listening_port);    
@@ -97,6 +100,7 @@ public class CalorkOsc {
         // recieves Osc from whatever
         while (true) {
             in => now;
+            e.broadcast();
             while (in.recv(in_msg)) {
                 if (in_msg.numArgs() == 1) {
                     in_msg.address.rfind("/") => pos;
