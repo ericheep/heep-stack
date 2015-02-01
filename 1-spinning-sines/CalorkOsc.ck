@@ -4,6 +4,8 @@
 public class CalorkOsc {
     // sets max number of OscOut objects
     10 => int NUM_ADDRS;
+    20 => int MAX_PARAMETERS;
+
     OscOut out[NUM_ADDRS];
     OscMsg out_msg[NUM_ADDRS];
 
@@ -21,7 +23,7 @@ public class CalorkOsc {
     string addrs[0];
 
     // parameter arrays
-    float params[0][NUM_ADDRS];
+    float params[MAX_PARAMETERS][NUM_ADDRS];
     string param_list[0];
 
     // for events outside of the class
@@ -39,6 +41,8 @@ public class CalorkOsc {
         lp => listening_port => in.port;
         // sets port to listen for all messages
         in.listenAll();
+        // allows to you to "send" to yourself
+        addIp("local", id);        
     }
  
     // searches for the index location of an array
@@ -62,18 +66,13 @@ public class CalorkOsc {
 
     // retrieves parameter using address and parameter type
     public float getParam(string addr, string param) {
-        for (int i; i < addrs.cap(); i++) {
-            if (addr == addrs[i]) {
-                return params[param][i]; 
-            }
-        }
+        return params[param][arg(addr, addrs)]; 
     }
 
     // setup up which params you'll want to listen for in a script
     public void setParams(string arr[]) {
         float add[NUM_ADDRS];
         for (int i; i < arr.cap(); i++) {
-            params << add;
             param_list << arr[i];
             params[i] @=> params[param_list[i]];
         }
@@ -100,7 +99,6 @@ public class CalorkOsc {
         // recieves Osc from whatever
         while (true) {
             in => now;
-            e.broadcast();
             while (in.recv(in_msg)) {
                 if (in_msg.numArgs() == 1) {
                     in_msg.address.rfind("/") => pos;
@@ -122,13 +120,38 @@ public class CalorkOsc {
                     }
                 }
             }
+            // used for broadcasting
+            e.broadcast();
         }
     }
 
     // sends Osc message using standard Osc params 
     public void send(string addr, string param, float val) {
         int idx;
-        if (addr != "/all" || addr != "/random") {
+        // in case you're sending to yourself
+        if (addr == my_addr) {
+            val => params[param][arg(my_addr, addrs)];
+            e.broadcast();
+        }
+        // send to a random player 
+        else if (addr == "/random") {
+            Math.random2(0, addrs.cap() - 1) => idx;
+            out[idx].start(my_addr); 
+            out[idx].add(param);
+            out[idx].add(val); 
+            out[idx].send();
+        }
+        // send to all players
+        else if (addr == "/all") {
+            for (int i; i < addrs.cap(); i++) {
+                out[i].start(my_addr); 
+                out[i].add(param);
+                out[i].add(val); 
+                out[i].send();
+            }
+        }
+        // sends to a specified individual player
+        else {
             for (int i; i < addrs.cap(); i++) {
                 if (addrs[i] == addr) {
                     i => idx;
@@ -139,20 +162,40 @@ public class CalorkOsc {
             out[idx].add(val); 
             out[idx].send();
         }
-        if (addr == "/random") {
-            Math.random2(0, addrs.cap() - 1) => idx;
-            out[idx].start(my_addr); 
-            out[idx].add(param);
-            out[idx].add(val); 
-            out[idx].send();
-        }
-        if (addr == "/all") {
-            for (int i; i < addrs.cap(); i++) {
-                out[i].start(my_addr); 
-                out[i].add(param);
-                out[i].add(val); 
-                out[i].send();
-            }
-        }
     }
 }
+
+/*
+// some example code
+// shows how to set up and get params
+
+CalorkOsc c;
+
+// set your sending address
+c.myAddr("/eric");
+
+// add one IP and address at a time, two string arguments
+c.addIp("169.254.87.91", "/justin");
+c.addIp("169.254.223.167", "/danny");
+c.addIp("169.254.207.86", "/mike");
+c.addIp("169.254.74.231", "/shaurjya");
+c.addIp("169.254.24.203", "/ed");
+
+// notice the brackets
+// you'll have to setup your parameters as an array of strings
+c.setParams(["/freq", "/vol", "/chaos"]);
+
+spork ~ c.recv();
+
+c.send("/eric", "/freq", 440);
+c.send("/eric", "/chaos", 0.1);
+
+<<< c.params["/freq"][0], c.params["/chaos"][0] >>>;
+
+while (true) {
+//    c.send("/eric", "/vol", 0.1);
+    // c.send("/random", "/vol", 0.1);
+    // c.send("/ed", "/freq", 0.518);
+    100::ms => now;
+}
+*/

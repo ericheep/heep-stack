@@ -1,3 +1,9 @@
+// spinning-sines.ck
+
+// keyboard controls
+KBHit kb;
+
+// custom class
 CalorkOsc c;
 
 // set your sending address
@@ -5,85 +11,142 @@ c.myAddr("/eric");
 
 // add one IP and address at a time, two string arguments
 c.addIp("169.254.87.91", "/justin");
-c.addIp("169.254.223.167", "/danny");
-c.addIp("169.254.207.86", "/mike");
-c.addIp("169.254.74.231", "/shaurjya");
-c.addIp("169.254.24.203", "/ed");
+//c.addIp("169.254.223.167", "/danny");
+//c.addIp("169.254.207.86", "/mike");
+//c.addIp("169.254.74.231", "/shaurjya");
+//c.addIp("169.254.24.203", "/ed");
 
 // you'll have to setup your parameters as an array of strings
-c.setParams(["/on", "/off", "/vols", "/harm", "/speed", "/double", "/chaos"]);
+c.setParams(["/gate", "/freq"]);
 
 // grabs player list 
 c.addrs @=> string players[];
-players << c.my_addr;
 
 // grabs number of players
 players.cap() => int NUM_PLAYERS;
+
+// enables listening
+spork ~ c.recv();
 
 // sets number of sin oscs to number of players
 SinOsc sin[NUM_PLAYERS];
 Gain gate[NUM_PLAYERS];
 
+// sine parameters
+500 => float spd; 
+50 => float my_fnd;
+10 => float my_hrm;
+
+// storage for all sine stuffs
+float hrm[NUM_PLAYERS]; 
+float fnd[NUM_PLAYERS]; 
+
 // sound chain set up
 for (int i; i < NUM_PLAYERS; i++) {
-    sin[i] => gate[i] => dac;
-    sin[i].gain(1.0);
-    gate[i].gain(0.0);;
-    <<< players[i], "" >>>;
+    sin[i] => dac;
+    sin[i].gain(0.0);
 }
 
 // cycles backwards or forwards through the players
 fun void cycle() {
     while (true) {  
-        for (int i; i < players.cap(); i++) {
-            spin(i, "/off");
-            spin((i + 1) % NUM_PLAYERS, "/on"); 
-            update();
-            100::ms => now;
+        for (int i; i < NUM_PLAYERS; i++) {
+            c.send(players[i], "/gate", 0);
+            c.send(players[(i + 1) % NUM_PLAYERS], "/gate", 0.4); 
+            spd::ms => now;
         }
     }
 }
 
 // triggered every cycle 
 fun void update() {
-    // one less, so not to trigger yourself
-    for (int i; i < players.cap() - 1; i++) {
-        c.getParam(players[i], "/on") => gate[i].gain;
-        c.getParam(players[i], "/off") => gate[i].gain;
-        c.getParam(players[i], "/freq") => sin[i].gain;
-    }
-}
-
-fun void local(string msg) {
-    if (msg == "/off") {
-        gate[NUM_PLAYERS - 1].gain(0.0);
-    }
-    else if (msg == "/on") {
-        gate[NUM_PLAYERS - 1].gain(1.0);
-    }
-}
-
-// 
-fun void spin(int idx, string msg) {
-    if (players[idx] == c.my_addr) {
-        if (msg == "/off") {
-            gate[NUM_PLAYERS - 1].gain(0.0);
+    while (true) {
+        c.e => now;
+        for (int i; i < NUM_PLAYERS; i++) {
+            c.getParam(players[i], "/gate") => sin[i].gain;
+            c.getParam(players[i], "/freq") => sin[i].freq;
         }
-        else if (msg == "/on") {
-            gate[NUM_PLAYERS - 1].gain(1.0);
+         <<< c.getParam("/eric", "/freq"), c.getParam("/eric", "/gate") >>>;
+    }
+}
+
+// keyboard input
+fun void input() {
+    while (true) {
+        kb => now;
+        while (kb.more()) {
+            action(kb.getchar());
         }
     }
-    else {
-        c.send(players[idx], msg, 0);
+}
+
+// prints out instructions
+fun void instructions() {
+    <<< " ", "" >>>;
+    <<< "             S P I N N I N G    S I N E S         ", "" >>>; 
+    <<< " ", "" >>>;
+    <<< "    [q] + speed    [w] + partial    [e] + fundamental ", "" >>>; 
+    <<< " ", "" >>>; 
+    <<< "    [a] - speed    [s] - partial    [d] - fundamental ", "" >>>; 
+    <<< " ", "" >>>; 
+}
+
+// keyboard actions
+fun void action(int key) {
+    // q, speeds up rotation
+    if (key == 113) {
+        if (spd > 10) {
+            1 -=> spd;
+        }
+    }
+    // a, slows down rotation
+    if (key == 97) {
+        if (spd < 1000) {
+            1 +=> spd;
+        }
+    }
+    // w, raises harmonic
+    if (key == 119) {
+        if (my_hrm < 10) {
+            1 +=> my_hrm; 
+        }
+        send("/freq", my_hrm * my_fnd);
+    }
+    // s, lowers harmonic
+    if (key == 115) {
+        if (my_hrm >= 1) {
+            1 -=> my_hrm; 
+        }
+        send("/freq", my_hrm * my_fnd);
+    }
+    // e, skews frequency up
+    if (key == 101) {
+        if (my_fnd < 55) {
+            1 +=> my_fnd; 
+        }
+        send("/freq", my_hrm * my_fnd);
+    }
+    // d, skews frequency down
+    if (key == 100) {
+        if (my_fnd > 25) {
+            1 -=> my_fnd; 
+        }
+        send("/freq", my_hrm * my_fnd);
+    }
+    // spacebar, shows instructions 
+    if (key == 32) { 
+        instructions();
     }
 }
 
-spork ~ cycle();
-spork ~ event();
+// send to all the players
+fun void send(string param, float val) {
+    for (int i; i < NUM_PLAYERS; i++) {
+        c.send(players[i], param, val); 
+    }
+}
 
 // main program
-while (true) {
-    1::second => now; 
-}
-
-
+spork ~ update();
+spork ~ input();
+cycle();
