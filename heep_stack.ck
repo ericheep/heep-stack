@@ -3,10 +3,10 @@
 
 ProgramNotes pn;
 
-["floor", 
-"impurities I/II",
-"sort I",
-"thank you Peter Ablinger", 
+["stasis patterns", 
+"bring out your dead",
+"impurities II (tentative)",
+"tail sort (tentative)", 
 "apollo 11 saturn V", 
 "binary sines"] @=> string program[];
 
@@ -20,6 +20,5 @@ for (int i; i < program.cap(); i++) {
     <<< "---", "" >>>;
 }
 
-// dedicated to Amy Mann, who trust me to move
-// out to California so I could study, of all things,
-// music technology
+// for Amy, who trust me to move too far away,
+// to study of all things, music technology
