@@ -10,8 +10,8 @@ CalorkOsc c;
 c.myAddr("/eric");
 
 // add one IP and address at a time, two string arguments
-c.addIp("10.2.35.254", "/machine");
-//c.addIp("169.254.87.91", "/justin");
+c.addIp("192.168.1.6", "/nick");
+c.addIp("192.168.1.10", "/rodrigo");
 //c.addIp("169.254.223.167", "/danny");
 //c.addIp("169.254.207.86", "/mike");
 //c.addIp("169.254.74.231", "/shaurjya");
