@@ -5,4 +5,4 @@
 Machine.add(me.dir() + "/CalorkOsc.ck");
 
 // main program
-Machine.add(me.dir() + "/spinning_sines.ck");
+Machine.add(me.dir() + "/spatial_patterns.ck");

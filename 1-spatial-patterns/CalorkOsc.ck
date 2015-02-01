@@ -165,21 +165,21 @@ public class CalorkOsc {
     }
 }
 
-/*
 // some example code
 // shows how to set up and get params
-
+/*
 CalorkOsc c;
 
 // set your sending address
 c.myAddr("/eric");
 
 // add one IP and address at a time, two string arguments
-c.addIp("169.254.87.91", "/justin");
-c.addIp("169.254.223.167", "/danny");
-c.addIp("169.254.207.86", "/mike");
-c.addIp("169.254.74.231", "/shaurjya");
-c.addIp("169.254.24.203", "/ed");
+c.addIp("10.2.35.254", "/machine");
+//c.addIp("169.254.87.91", "/justin");
+//c.addIp("169.254.223.167", "/danny");
+//c.addIp("169.254.207.86", "/mike");
+//c.addIp("169.254.74.231", "/shaurjya");
+//c.addIp("169.254.24.203", "/ed");
 
 // notice the brackets
 // you'll have to setup your parameters as an array of strings
