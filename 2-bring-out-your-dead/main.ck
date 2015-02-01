@@ -1,15 +1,18 @@
-// 1-floor.ck
+// main.ck
+// bring-out-your-dead
 // Eric Heep
 
 // classes
 Mel mel;
+FIR fir;
 Matrix mat;
 Chromagram chr;
+Visualization vis;
 
 // sound chain
 adc => FFT fft => blackhole;
 
-// fft parameters 
+// fft parameters
 second / samp => float sr;
 4096 => int N => int win => fft.size;
 Windowing.hamming(N) => fft.window;
@@ -38,7 +41,11 @@ while (true) {
     chr.wrap(X) @=> X;
 
     // rms scaling
-    mat.rmstodb(blob.fvals()) @=> X;
+    mat.rmstodb(X) @=> X;
 
-    <<< X[0], "\t", X[1], "\t", X[2], "\t", X[3], "\t", X[4], "\t", X[5], "\t", X[6],"\t", X[7],"\t", X[8],"\t", X[9],"\t", X[10],"\t", X[11] >>>;
+    // fir filter
+    fir.fir(X) @=> X;
+
+    vis.data(X, "/data");
+    //<<< X[0], "\t", X[1], "\t", X[2], "\t", X[3], "\t", X[4], "\t", X[5], "\t", X[6],"\t", X[7],"\t", X[8],"\t", X[9],"\t", X[10], X[11] >>>;
 }
