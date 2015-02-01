@@ -1,4 +1,4 @@
-// spatial_patterns.ck
+// stasis_patterns.ck
 
 // keyboard controls
 KBHit kb;

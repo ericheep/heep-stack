@@ -1,8 +1,8 @@
 // master.ck
-// for spatial-patterns
+// for stasis-patterns
 
 // Osc communication class
 Machine.add(me.dir() + "/CalorkOsc.ck");
 
 // main program
-Machine.add(me.dir() + "/spatial_patterns.ck");
+Machine.add(me.dir() + "/stasis_patterns.ck");
