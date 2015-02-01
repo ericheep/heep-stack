@@ -109,7 +109,7 @@ fun void instructions() {
         spork ~ cycle();
     }
     <<< " ", "" >>>;
-    <<< "             S P A T I A L  P A T T E R N S ", "" >>>; 
+    <<< "             S T A S I S  P A T T E R N S ", "" >>>; 
     <<< " ", "" >>>;
     <<< "    [q] + speed    [w] + partial    [e] + fundamental ", "" >>>; 
     <<< " ", "" >>>; 
