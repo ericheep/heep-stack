@@ -1,5 +1,5 @@
 // master.ck
-// for spinning-sines
+// for spatial-patterns
 
 // Osc communication class
 Machine.add(me.dir() + "/CalorkOsc.ck");
