@@ -8,10 +8,6 @@ public class FIR {
     public float[] fir(float X[]) {
         float avg[mv_avg.cap()]; 
 
-
-        // 12, 10
-        <<< mv_avg.cap(),  mv_avg[0].cap() >>>;
-
         for (mv_avg[0].cap() - 2 => int i; i >= 0; i--) {
             for (int j; j < mv_avg.cap(); j++) {
                 mv_avg[j][i] => mv_avg[j][i + 1];
