@@ -98,7 +98,7 @@ public class LiSaSort {
         if (addr == "/bot") {
             // returns index positions of notes 
             a.index(bot_l_global, modes) @=> bot_l_idx;
-            a.index(bot_r_global, modes) @=> top_r_idx;
+            a.index(bot_r_global, modes) @=> bot_r_idx;
             // returns distances of each note in each mode
             a.distance(bot_l_idx, bot_r_idx, modes) @=> bot_l_dist;
             a.distance(bot_r_idx, bot_l_idx, modes) @=> bot_r_dist;
