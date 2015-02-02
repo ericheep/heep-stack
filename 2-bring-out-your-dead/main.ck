@@ -7,6 +7,7 @@ Mel mel;
 FIR fir;
 YourDead y;
 Matrix mat;
+Spectral spc;
 Chromagram chr;
 Visualization vis;
 
@@ -26,19 +27,26 @@ mat.transpose(mx) @=> mx;
 // cuts off unnecessary half of transformation weights
 mat.cutMat(mx, 0, win/2) @=> mx;
 
+// main fft
 float X[];
+
+// var
+float cen, spr, crst;
 
 // main program
 while (true) {
-    (win/2)::samp => now;
-
     // creates our array of fft bins
     fft.upchuck() @=> fft_blob;
 
     // gets rms
     rms.upchuck() @=> rms_blob;
 
-    // keystrength cross correlation
+    // low level spectral features 
+    spc.centroid(fft_blob.fvals(), sr, N) => cen;
+    spc.spread(fft_blob.fvals(), sr, N) => spr;
+    spc.crest(fft_blob.fvals()) => crst; 
+
+    // chroma cross correlation
     mat.dot(fft_blob.fvals(), mx) @=> X;
 
     // wraps into an octave
@@ -49,12 +57,17 @@ while (true) {
     mat.rmstodb(X) @=> X;
 
     // fir filter
-    fir.fir(X) @=> X;
+    fir.matFir(X) @=> X;
+    fir.fir(cen, "cen") => cen;
+    fir.fir(spr, "spr") => spr;
+    fir.fir(crst, "crst") => crst;
 
-    // intervallic analysis
-    // decides dead response
-    y.interval(X, rms_blob.fval(0));
+    // dead response
+    y.features(X, rms_blob.fval(0), cen, spr, crst);
     
-    // sends filtered chroma to processing
+    // sends filtered chroma to Processing
     vis.data(X, "/data");
+
+    // hop size of 50%
+    (win/2)::samp => now;
 }
