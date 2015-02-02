@@ -1,3 +1,7 @@
+// master.ck
+// tail-sort
+// Eric Heep
+
 // array functions
 Machine.add("ArrayFunctions.ck");
 // special looper
