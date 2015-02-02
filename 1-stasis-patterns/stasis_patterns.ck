@@ -11,14 +11,14 @@ c.myAddr("/eric");
 
 // add one IP and address at a time, two string arguments
 c.addIp("192.168.1.6", "/nick");
-c.addIp("192.168.1.10", "/rodrigo");
+//c.addIp("192.168.1.10", "/rodrigo");
 //c.addIp("169.254.223.167", "/danny");
 //c.addIp("169.254.207.86", "/mike");
 //c.addIp("169.254.74.231", "/shaurjya");
 //c.addIp("169.254.24.203", "/ed");
 
 // you'll have to setup your parameters as an array of strings
-c.setParams(["/gate", "/freq"]);
+c.setParams(["/gate", "/freq", "/click"]);
 
 // grabs player list 
 c.addrs @=> string players[];
@@ -38,22 +38,19 @@ Gain gate[NUM_PLAYERS];
 int begin;
 
 // starting values
-20 => float spd;
-500 => float my_fnd;
-15 => float my_hrm;
+100 => float spd;
+3000 => float my_freq;
+10 => float my_click;
 
-// fundamental max and min
-500 => float fnd_max;
-200 => float fnd_min;
-
-// partial max and min
-20 => float hrm_max;
-1 => float hrm_min;
+// frequency max and min
+2900 => float freq_max;
+3100 => float freq_min;
 
 // switches for envelopes
 int switch[NUM_PLAYERS];
 
 // storage for all sine stuffs
+float click[NUM_PLAYERS];
 float hrm[NUM_PLAYERS]; 
 float fnd[NUM_PLAYERS]; 
 
@@ -61,7 +58,6 @@ float fnd[NUM_PLAYERS];
 for (int i; i < NUM_PLAYERS; i++) {
     sin[i] => env[i] => dac;
     sin[i].gain(0.7);
-    env[i].set(10::ms, 0::ms, 1.0, 10::ms);
 }
 
 // cycles backwards or forwards through the players
@@ -81,10 +77,13 @@ fun void update() {
     while (true) {
         c.e => now;
         for (int i; i < NUM_PLAYERS; i++) {
+            c.getParam(players[i], "/click") => click[i];
             if (c.getParam(players[i], "/gate") == 1) {
+                env[i].set(click[i]::ms, 0::ms, 1.0, click[i]::ms);
                 env[i].keyOn(); 
             }
             if (c.getParam(players[i], "/gate") == 0) {
+                env[i].set(click[i]::ms, 0::ms, 1.0, click[i]::ms);
                 env[i].keyOff();
             }
             c.getParam(players[i], "/freq") => sin[i].freq;
@@ -105,15 +104,17 @@ fun void input() {
 // prints out instructions
 fun void instructions() {
     if (begin != 1) {
+        // initializes click
+        send("/click", my_click);
         spork ~ update();
         spork ~ cycle();
     }
     <<< " ", "" >>>;
-    <<< "             S T A S I S  P A T T E R N S ", "" >>>; 
+    <<< "              S T A S I S  P A T T E R N S ", "" >>>; 
     <<< " ", "" >>>;
-    <<< "    [q] + speed    [w] + partial    [e] + fundamental ", "" >>>; 
+    <<< "    [q] + speed    [w] + frequency    [e] click on", "" >>>; 
     <<< " ", "" >>>; 
-    <<< "    [a] - speed    [s] - partial    [d] - fundamental ", "" >>>; 
+    <<< "    [a] - speed    [s] - frequency    [d] click off", "" >>>; 
     <<< " ", "" >>>; 
 }
 
@@ -131,33 +132,29 @@ fun void action(int key) {
             1 +=> spd;
         }
     }
-    // w, raises harmonic
+    // w, raises frequency 
     if (key == 119) {
-        if (my_hrm < hrm_max) {
-            1 +=> my_hrm; 
+        if (my_freq < freq_max) {
+            1 +=> my_freq; 
         }
-        send("/freq", my_hrm * my_fnd);
+        send("/freq", my_freq);
     }
-    // s, lowers harmonic
+    // s, lowers frequency 
     if (key == 115) {
-        if (my_hrm >= hrm_min) {
-            1 -=> my_hrm; 
+        if (my_freq >= freq_min) {
+            1 -=> my_freq; 
         }
-        send("/freq", my_hrm * my_fnd);
+        send("/freq", my_freq);
     }
-    // e, skews frequency up
+    // e, turns on click
     if (key == 101) {
-        if (my_fnd < fnd_max) {
-            0.1 +=> my_fnd; 
-        }
-        send("/freq", my_hrm * my_fnd);
+        0 => my_click; 
+        send("/click", my_click);
     }
-    // d, skews frequency down
+    // d, turns off click
     if (key == 100) {
-        if (my_fnd > fnd_min) {
-            0.1 -=> my_fnd; 
-        }
-        send("/freq", my_hrm * my_fnd);
+        10 => my_click; 
+        send("/click", my_click);
     }
     // spacebar, shows instructions 
     if (key == 32) { 
