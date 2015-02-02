@@ -10,7 +10,7 @@ CalorkOsc c;
 c.myAddr("/eric");
 
 // add one IP and address at a time, two string arguments
-//c.addIp("192.168.1.6", "/nick");
+c.addIp("192.168.1.6", "/nick");
 //c.addIp("192.168.1.10", "/rodrigo");
 //c.addIp("169.254.223.167", "/danny");
 //c.addIp("169.254.207.86", "/mike");
@@ -18,7 +18,7 @@ c.myAddr("/eric");
 //c.addIp("169.254.24.203", "/ed");
 
 // you'll have to setup your parameters as an array of strings
-c.setParams(["/gate", "/freq", "/click", "/mult"]);
+c.setParams(["/gate", "/freq", "/click", "/oscil", "/mult"]);
 
 // grabs player list 
 c.addrs @=> string players[];
@@ -38,18 +38,20 @@ Gain gate[NUM_PLAYERS];
 int begin;
 
 // starting values
-100 => float spd;
-2000 => float my_freq;
+300 => float spd;
+220 => float my_freq;
 10 => float my_click;
-5.0/4.0 => float my_mult;
+0.0 => float my_oscil;
+1.0 => float my_mult;
 
 // frequency max and min
-2200 => float freq_max;
-1800 => float freq_min;
+220 => float freq_max;
+200 => float freq_min;
 
 // storage for all sine stuffs
 float mult[NUM_PLAYERS];
 float click[NUM_PLAYERS];
+float oscil[NUM_PLAYERS];
 
 // sound chain set up
 for (int i; i < NUM_PLAYERS; i++) {
@@ -76,15 +78,16 @@ fun void update() {
         for (int i; i < NUM_PLAYERS; i++) {
             c.getParam(players[i], "/click") => click[i];
             if (c.getParam(players[i], "/gate") == 1) {
-                env[i].set(click[i]::ms, 0::ms, 1.0, click[i]::ms);
+                env[i].set(click[i]::ms, 0::ms, 1.0, 10::ms);
                 env[i].keyOn(); 
             }
             if (c.getParam(players[i], "/gate") == 0) {
-                env[i].set(click[i]::ms, 0::ms, 1.0, click[i]::ms);
+                env[i].set(click[i]::ms, 0::ms, 1.0, 10::ms);
                 env[i].keyOff();
             }
             c.getParam(players[i], "/mult") => mult[i];
-            c.getParam(players[i], "/freq") * mult[i] => sin[i].freq;
+            c.getParam(players[i], "/oscil") => oscil[i];
+            c.getParam(players[i], "/freq") * mult[i] * oscil[i] => sin[i].freq;
         }
     }
 }
@@ -105,21 +108,22 @@ fun void instructions() {
         // initializes click and mult
         send("/mult", my_mult);
         send("/click", my_click);
+        send("/freq", my_freq);
+        send("/oscil", my_oscil);
         spork ~ update();
         spork ~ cycle();
     }
     <<< " ", "" >>>;
-    <<< "              S T A S I S  P A T T E R N S ", "" >>>; 
+    <<< "                         S T A S I S  P A T T E R N S ", "" >>>; 
     <<< " ", "" >>>;
-    <<< "    [q] + speed    [w] + frequency    [e] + 3rd    [r] click on", "" >>>; 
+    <<< "    [q] + speed    [w] + frequency    [e] + 3rd    [r] oscil on   [t] click on", "" >>>; 
     <<< " ", "" >>>; 
-    <<< "    [a] - speed    [s] - frequency    [d] - 3rd    [f] click off", "" >>>; 
+    <<< "    [a] - speed    [s] - frequency    [d] - 3rd    [f] oscil off  [g] click off", "" >>>; 
     <<< " ", "" >>>; 
 }
 
 // keyboard actions
 fun void action(int key) {
-    <<< key >>>;
     // q, speeds up rotation
     if (key == 113) {
         if (spd > 10) {
@@ -153,18 +157,28 @@ fun void action(int key) {
     }
     // d, turns off frequency multiplier
     if (key == 100) {
-        if (my_mult > 5.0/4.0) {
+        if (my_mult > 1.0) {
             5.0/4.0 /=> my_mult; 
         }
         send("/mult", my_mult);
     }
-    // e, turns on click
+    // r, turns on oscillator 
     if (key == 114) {
+        1 => my_oscil; 
+        send("/oscil", my_oscil);
+    }
+    // f, turns off oscillator
+    if (key == 102) {
+        0 => my_oscil; 
+        send("/oscil", my_oscil);
+    }
+    // t, turns on click
+    if (key == 116) {
         0 => my_click; 
         send("/click", my_click);
     }
-    // d, turns off click
-    if (key == 102) {
+    // g, turns off click 
+    if (key == 103) {
         10 => my_click; 
         send("/click", my_click);
     }
