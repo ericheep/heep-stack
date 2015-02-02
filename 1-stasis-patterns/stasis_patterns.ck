@@ -10,7 +10,7 @@ CalorkOsc c;
 c.myAddr("/eric");
 
 // add one IP and address at a time, two string arguments
-c.addIp("192.168.1.6", "/nick");
+//c.addIp("192.168.1.6", "/nick");
 //c.addIp("192.168.1.10", "/rodrigo");
 //c.addIp("169.254.223.167", "/danny");
 //c.addIp("169.254.207.86", "/mike");
@@ -18,7 +18,7 @@ c.addIp("192.168.1.6", "/nick");
 //c.addIp("169.254.24.203", "/ed");
 
 // you'll have to setup your parameters as an array of strings
-c.setParams(["/gate", "/freq", "/click"]);
+c.setParams(["/gate", "/freq", "/click", "/mult"]);
 
 // grabs player list 
 c.addrs @=> string players[];
@@ -39,20 +39,17 @@ int begin;
 
 // starting values
 100 => float spd;
-3000 => float my_freq;
+2000 => float my_freq;
 10 => float my_click;
+5.0/4.0 => float my_mult;
 
 // frequency max and min
-2900 => float freq_max;
-3100 => float freq_min;
-
-// switches for envelopes
-int switch[NUM_PLAYERS];
+2200 => float freq_max;
+1800 => float freq_min;
 
 // storage for all sine stuffs
+float mult[NUM_PLAYERS];
 float click[NUM_PLAYERS];
-float hrm[NUM_PLAYERS]; 
-float fnd[NUM_PLAYERS]; 
 
 // sound chain set up
 for (int i; i < NUM_PLAYERS; i++) {
@@ -86,7 +83,8 @@ fun void update() {
                 env[i].set(click[i]::ms, 0::ms, 1.0, click[i]::ms);
                 env[i].keyOff();
             }
-            c.getParam(players[i], "/freq") => sin[i].freq;
+            c.getParam(players[i], "/mult") => mult[i];
+            c.getParam(players[i], "/freq") * mult[i] => sin[i].freq;
         }
     }
 }
@@ -104,7 +102,8 @@ fun void input() {
 // prints out instructions
 fun void instructions() {
     if (begin != 1) {
-        // initializes click
+        // initializes click and mult
+        send("/mult", my_mult);
         send("/click", my_click);
         spork ~ update();
         spork ~ cycle();
@@ -112,24 +111,25 @@ fun void instructions() {
     <<< " ", "" >>>;
     <<< "              S T A S I S  P A T T E R N S ", "" >>>; 
     <<< " ", "" >>>;
-    <<< "    [q] + speed    [w] + frequency    [e] click on", "" >>>; 
+    <<< "    [q] + speed    [w] + frequency    [e] + 3rd    [r] click on", "" >>>; 
     <<< " ", "" >>>; 
-    <<< "    [a] - speed    [s] - frequency    [d] click off", "" >>>; 
+    <<< "    [a] - speed    [s] - frequency    [d] - 3rd    [f] click off", "" >>>; 
     <<< " ", "" >>>; 
 }
 
 // keyboard actions
 fun void action(int key) {
+    <<< key >>>;
     // q, speeds up rotation
     if (key == 113) {
         if (spd > 10) {
-            1 -=> spd;
+            5 -=> spd;
         }
     }
     // a, slows down rotation
     if (key == 97) {
         if (spd < 1000) {
-            1 +=> spd;
+            5 +=> spd;
         }
     }
     // w, raises frequency 
@@ -146,13 +146,25 @@ fun void action(int key) {
         }
         send("/freq", my_freq);
     }
-    // e, turns on click
+    // e, turns on frequency multiplier 
     if (key == 101) {
+        5.0/4.0 *=> my_mult; 
+        send("/mult", my_mult);
+    }
+    // d, turns off frequency multiplier
+    if (key == 100) {
+        if (my_mult > 5.0/4.0) {
+            5.0/4.0 /=> my_mult; 
+        }
+        send("/mult", my_mult);
+    }
+    // e, turns on click
+    if (key == 114) {
         0 => my_click; 
         send("/click", my_click);
     }
     // d, turns off click
-    if (key == 100) {
+    if (key == 102) {
         10 => my_click; 
         send("/click", my_click);
     }
@@ -160,6 +172,7 @@ fun void action(int key) {
     if (key == 32) { 
         instructions();
     }
+
 }
 
 // send to all the players
