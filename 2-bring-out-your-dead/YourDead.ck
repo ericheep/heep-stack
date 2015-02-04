@@ -4,22 +4,9 @@
 
 public class YourDead {
    
-    // for the argMax function
-    Matrix mat;
+    public void features(float rms, float cen,  float spr, float crst) {
 
-    int dyad[1];
-
-    // uses filtered data to decide response 
-    public void features(float ch[], float rms, float cen,  float spr, float crst) {
-
-        // returns two highest indices
-        mat.argMax(ch, 1) @=> dyad; 
-        <<< cen, spr, crst >>>; 
-
-        if (rms > 0.0001) {
-            //<<< dyad[0] >>>;
-            //<<< Math.abs(dyad[0] - dyad[1]) >>>;
-        }
+        <<< "Cen:", cen, "\t", "Spr:", spr, "\t", "Crst:", crst, "\t", "RMS:", rms >>>; 
     }
 }
 

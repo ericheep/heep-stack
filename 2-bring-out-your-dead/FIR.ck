@@ -7,7 +7,7 @@ public class FIR {
     10 => int num;
 
     // arrays for each feature
-    float ch_avg[12][num];
+    // float ch_avg[12][num];
     float cen_avg[num];
     float spr_avg[num];
     float crst_avg[num];
@@ -36,7 +36,7 @@ public class FIR {
     }
 
     // returns average over a matrix, returns a filtered vector
-    public float[] matFir(float X[]) {
+    /* public float[] matFir(float X[]) {
         float avg[ch_avg.cap()]; 
 
         for (ch_avg[0].cap() - 2 => int i; i >= 0; i--) {
@@ -57,4 +57,5 @@ public class FIR {
         }
         return avg;
     }
+    */
 }

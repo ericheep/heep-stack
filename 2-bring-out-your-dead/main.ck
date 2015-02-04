@@ -8,24 +8,24 @@ FIR fir;
 YourDead y;
 Matrix mat;
 Spectral spc;
-Chromagram chr;
+// Chromagram chr;
 Visualization vis;
 
 // sound chain
 adc => FFT fft =^ RMS rms => blackhole; 
 // fft parameters
 second / samp => float sr;
-4096 => int N => int win => fft.size;
+1024 => int N => int win => fft.size;
 Windowing.hamming(N) => fft.window;
 UAnaBlob fft_blob;
 UAnaBlob rms_blob;
 
 // calculates transformation matrix
-mel.calc(N, sr, "constantQ") @=> float mx[][];
-mat.transpose(mx) @=> mx;
+// mel.calc(N, sr, "constantQ") @=> float mx[][];
+// mat.transpose(mx) @=> mx;
 
 // cuts off unnecessary half of transformation weights
-mat.cutMat(mx, 0, win/2) @=> mx;
+// mat.cutMat(mx, 0, win/2) @=> mx;
 
 // main fft
 float X[];
@@ -47,26 +47,28 @@ while (true) {
     spc.crest(fft_blob.fvals()) => crst; 
 
     // chroma cross correlation
-    mat.dot(fft_blob.fvals(), mx) @=> X;
+    // mat.dot(fft_blob.fvals(), mx) @=> X;
 
     // wraps into an octave
-    chr.wrap(X) @=> X;
-    chr.quantize(X) @=> X;
+    // chr.wrap(X) @=> X;
+    // chr.quantize(X) @=> X;
 
     // rms scaling
-    mat.rmstodb(X) @=> X;
+    // mat.rmstodb(X) @=> X;
 
     // fir filter
-    fir.matFir(X) @=> X;
-    fir.fir(cen, "cen") => cen;
-    fir.fir(spr, "spr") => spr;
-    fir.fir(crst, "crst") => crst;
+    // fir.matFir(X) @=> X;
+    if (rms_blob.fval(0) > 0.0001) {
+        fir.fir(cen, "cen") => cen;
+        fir.fir(spr, "spr") => spr;
+        fir.fir(crst, "crst") => crst;
+    }
 
     // dead response
-    y.features(X, rms_blob.fval(0), cen, spr, crst);
+    y.features(rms_blob.fval(0), cen, spr, crst);
     
     // sends filtered chroma to Processing
-    vis.data(X, "/data");
+    vis.data([rms_blob.fval(0), cen, spr, crst], "/data");
 
     // hop size of 50%
     (win/2)::samp => now;
