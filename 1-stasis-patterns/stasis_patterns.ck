@@ -10,12 +10,11 @@ CalorkOsc c;
 c.myAddr("/eric");
 
 // add one IP and address at a time, two string arguments
-c.addIp("192.168.1.6", "/nick");
-//c.addIp("192.168.1.10", "/rodrigo");
-//c.addIp("169.254.223.167", "/danny");
-//c.addIp("169.254.207.86", "/mike");
-//c.addIp("169.254.74.231", "/shaurjya");
-//c.addIp("169.254.24.203", "/ed");
+//c.addIp("169.254.77.42", "/dexter");
+//c.addIp("10.40.13.4", "/ed");
+//c.addIp("10.40.20.1", "/mike");
+//c.addIp("10.40.14.71", "/shaurjya");
+//c.addIp("10.40.2.25", "/danny");
 
 // you'll have to setup your parameters as an array of strings
 c.setParams(["/gate", "/freq", "/click", "/oscil", "/mult"]);
@@ -57,6 +56,9 @@ float oscil[NUM_PLAYERS];
 for (int i; i < NUM_PLAYERS; i++) {
     sin[i] => env[i] => dac;
     sin[i].gain(0.7);
+
+    // ensures click does not start at the beginning
+    10 => click[i];
 }
 
 // cycles backwards or forwards through the players
@@ -126,14 +128,14 @@ fun void instructions() {
 fun void action(int key) {
     // q, speeds up rotation
     if (key == 113) {
-        if (spd > 10) {
-            5 -=> spd;
+        if (spd > 4) {
+            3 -=> spd;
         }
     }
     // a, slows down rotation
     if (key == 97) {
         if (spd < 1000) {
-            5 +=> spd;
+            3 +=> spd;
         }
     }
     // w, raises frequency 
@@ -186,7 +188,6 @@ fun void action(int key) {
     if (key == 32) { 
         instructions();
     }
-
 }
 
 // send to all the players
@@ -197,4 +198,5 @@ fun void send(string param, float val) {
 }
 
 // main program, press spacebar to start
+<<< "Press spacebar to start:", "" >>>;
 input();
