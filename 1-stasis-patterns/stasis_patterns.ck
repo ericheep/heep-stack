@@ -12,7 +12,8 @@ c.myAddr("/eric");
 // add one IP and address at a time, two string arguments
 // c.addIp("10.0.0.3", "/jp");
 // c.addIp("10.0.0.4", "/bruce");
-c.addIp("10.0.0.5", "/mike");
+// c.addIp("10.0.0.6", "/danny");
+c.addIp("10.0.0.7", "/dexter");
 
 // you'll have to setup your parameters as an array of strings
 c.setParams(["/gate", "/freq", "/click", "/oscil", "/mult"]);
@@ -35,7 +36,7 @@ Gain gate[NUM_PLAYERS];
 int begin;
 
 // starting values
-Math.random2(500,1000); => float spd;
+Math.random2(500,1000) => float spd;
 220 => float my_freq;
 0.0 => float my_oscil;
 1.0 => float my_mult;
@@ -76,7 +77,7 @@ fun void cycle() {
 // a player sends to themselves
 fun void update() {
     while (true) {
-        c.e => now;
+        c.e[players[idx]] => now;
         for (int i; i < NUM_PLAYERS; i++) {
             c.getParam(players[i], "/click") => click[i];
             if (c.getParam(players[i], "/gate") == 1) {

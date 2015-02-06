@@ -22,12 +22,12 @@ public class CalorkOsc {
     string my_addr;
     string addrs[0];
 
+    // event stuff
+    Event e[NUM_ADDRS];
+
     // parameter arrays
     float params[MAX_PARAMETERS][NUM_ADDRS];
     string param_list[0];
-
-    // for events outside of the class
-    Event e;
 
     // sets your name for outgoing messages, defaults port to 57120
     public void myAddr(string id) {
@@ -46,9 +46,9 @@ public class CalorkOsc {
     }
  
     // searches for the index location of an array
-    private int arg(string str, string arr[]) {
-        for (int i; i < arr.cap(); i++) {
-            if (str == arr[i]) {
+    private int argAddr(string str) {
+        for (int i; i < addrs.cap(); i++) {
+            if (str == addrs[i]) {
                 return i; 
             }
         }
@@ -66,7 +66,11 @@ public class CalorkOsc {
 
     // retrieves parameter using address and parameter type
     public float getParam(string addr, string param) {
-        return params[param][arg(addr, addrs)]; 
+        return params[param][argAddr(addr)]; 
+    }
+
+    public float resetParam(string addr, string param) {
+        0 => params[param][argAddr(addr)];
     }
 
     // setup up which params you'll want to listen for in a script
@@ -107,7 +111,7 @@ public class CalorkOsc {
 
                     // ensures a valid message 
                     if (check(addr, addrs) && check(param, param_list)) {
-                        in_msg.getFloat(0) => params[param][arg(addr, addrs)];
+                        in_msg.getFloat(0) => params[param][argAddr(addr)];
                     }
                 }
                 if (in_msg.numArgs() == 2) {
@@ -116,22 +120,24 @@ public class CalorkOsc {
 
                     // ensures a valid message 
                     if (check(addr, addrs) && check(param, param_list)) {
-                        in_msg.getFloat(1) => params[param][arg(addr, addrs)];
+                        in_msg.getFloat(1) => params[param][argAddr(addr)];
                     }
                 }
+                // used for broadcasting
+                e[argAddr(addr)].signal();
             }
-            // used for broadcasting
-            e.broadcast();
         }
     }
 
     // sends Osc message using standard Osc params 
     public void send(string addr, string param, float val) {
+        // index variable
         int idx;
-        // in case you're sending to yourself
+        // in case you're sending to yourself,
+        // this bypasses the receiving function 
         if (addr == my_addr) {
-            val => params[param][arg(my_addr, addrs)];
-            e.broadcast();
+            val => params[param][argAddr(my_addr)];
+            e[argAddr(addr)].signal();
         }
         // send to a random player 
         else if (addr == "/random") {
@@ -152,11 +158,9 @@ public class CalorkOsc {
         }
         // sends to a specified individual player
         else {
-            for (int i; i < addrs.cap(); i++) {
-                if (addrs[i] == addr) {
-                    i => idx;
-                }
-            }
+            // finds the index
+            argAddr(addr) => idx;
+           
             out[idx].start(my_addr); 
             out[idx].add(param);
             out[idx].add(val); 
@@ -165,35 +169,40 @@ public class CalorkOsc {
     }
 }
 
+/*
 // some example code
 // shows how to set up and get params
-/*
+
 CalorkOsc c;
 
 // set your sending address
 c.myAddr("/eric");
 
 // add one IP and address at a time, two string arguments
-c.addIp("10.2.35.254", "/machine");
-//c.addIp("169.254.87.91", "/justin");
-//c.addIp("169.254.223.167", "/danny");
-//c.addIp("169.254.207.86", "/mike");
-//c.addIp("169.254.74.231", "/shaurjya");
-//c.addIp("169.254.24.203", "/ed");
+// c.addIp("169.254.24.203", "/ed");
 
 // notice the brackets
 // you'll have to setup your parameters as an array of strings
 c.setParams(["/freq", "/vol", "/chaos"]);
 
 spork ~ c.recv();
+spork ~ eventTester();
 
-c.send("/eric", "/freq", 440);
-c.send("/eric", "/chaos", 0.1);
+fun void eventTester() {
+    while (true) {
+        c.e[c.argAddr("/eric")] => now; 
+    }
+}
 
-<<< c.params["/freq"][0], c.params["/chaos"][0] >>>;
+// me.yield();
+
+// c.send("/ed", "/freq", 440);
+// c.send("/eric", "/chaos", 0.1);
+
+// <<< c.params["/freq"][0], c.params["/chaos"][0] >>>;
 
 while (true) {
-//    c.send("/eric", "/vol", 0.1);
+    c.send("/eric", "/vol", 0.1);
     // c.send("/random", "/vol", 0.1);
     // c.send("/ed", "/freq", 0.518);
     100::ms => now;
