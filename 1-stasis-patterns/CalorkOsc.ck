@@ -16,7 +16,7 @@ public class CalorkOsc {
     // int for counting number of Osc objects
     int idx;
     57120 => int listening_port;
-    57119 => int sending_port;
+    57120 => int sending_port;
 
     // address variables
     string my_addr;

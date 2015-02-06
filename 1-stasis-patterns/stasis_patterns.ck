@@ -11,7 +11,8 @@ c.myAddr("/eric");
 
 // add one IP and address at a time, two string arguments
 // c.addIp("10.0.0.3", "/jp");
-c.addIp("10.0.0.4", "/bruce");
+// c.addIp("10.0.0.4", "/bruce");
+c.addIp("10.0.0.5", "/mike");
 
 // you'll have to setup your parameters as an array of strings
 c.setParams(["/gate", "/freq", "/click", "/oscil", "/mult"]);
@@ -34,14 +35,14 @@ Gain gate[NUM_PLAYERS];
 int begin;
 
 // starting values
-500 => float spd;
+Math.random2(500,1000); => float spd;
 220 => float my_freq;
-10 => float my_click;
 0.0 => float my_oscil;
 1.0 => float my_mult;
+10 => float my_click;
 
 // frequency max and min
-220 => float freq_max;
+240 => float freq_max;
 200 => float freq_min;
 
 // storage for all sine stuffs
@@ -54,7 +55,9 @@ for (int i; i < NUM_PLAYERS; i++) {
     sin[i] => env[i] => dac;
     sin[i].gain(0.7);
 
-    // ensures click does not start at the beginning
+    // initializing arrays
+    1.0 => oscil[i];
+    1.0 => mult[i];
     10 => click[i];
 }
 
@@ -192,6 +195,7 @@ fun void action(int key) {
 fun void send(string param, float val) {
     for (int i; i < NUM_PLAYERS; i++) {
         c.send(players[i], param, val); 
+        10::samp => now;
     }
 }
 
