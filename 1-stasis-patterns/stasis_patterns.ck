@@ -10,11 +10,7 @@ CalorkOsc c;
 c.myAddr("/eric");
 
 // add one IP and address at a time, two string arguments
-//c.addIp("169.254.77.42", "/dexter");
-//c.addIp("10.40.13.4", "/ed");
-//c.addIp("10.40.20.1", "/mike");
-//c.addIp("10.40.14.71", "/shaurjya");
-//c.addIp("10.40.2.25", "/danny");
+c.addIp("10.0.0.3", "/jp");
 
 // you'll have to setup your parameters as an array of strings
 c.setParams(["/gate", "/freq", "/click", "/oscil", "/mult"]);
@@ -37,7 +33,7 @@ Gain gate[NUM_PLAYERS];
 int begin;
 
 // starting values
-300 => float spd;
+500 => float spd;
 220 => float my_freq;
 10 => float my_click;
 0.0 => float my_oscil;
