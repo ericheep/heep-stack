@@ -10,7 +10,8 @@ CalorkOsc c;
 c.myAddr("/eric");
 
 // add one IP and address at a time, two string arguments
-c.addIp("10.0.0.3", "/jp");
+// c.addIp("10.0.0.3", "/jp");
+c.addIp("10.0.0.4", "/bruce");
 
 // you'll have to setup your parameters as an array of strings
 c.setParams(["/gate", "/freq", "/click", "/oscil", "/mult"]);
@@ -103,7 +104,8 @@ fun void input() {
 // prints out instructions
 fun void instructions() {
     if (begin != 1) {
-        // initializes click and mult
+        1 => begin;
+        // initialize parameters
         send("/mult", my_mult);
         send("/click", my_click);
         send("/freq", my_freq);
