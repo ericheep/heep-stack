@@ -4,12 +4,14 @@
 public class FIR {
   
     // amount of FIR things
-    10 => int num;
+    30 => int num;
 
     // arrays for each feature
     // float ch_avg[12][num];
     float cen_avg[num];
     float spr_avg[num];
+    float hfc_avg[num];
+    float rms_avg[num];
     float crst_avg[num];
 
     public float fir(float x, string f) {
@@ -19,16 +21,22 @@ public class FIR {
         for (num - 2 => int i; i >= 0; i--) {
             if (f == "cen") cen_avg[i] => cen_avg[i + 1];
             if (f == "spr") spr_avg[i] => spr_avg[i + 1];
+            if (f == "hfc") hfc_avg[i] => hfc_avg[i + 1];
+            if (f == "rms") rms_avg[i] => rms_avg[i + 1];
             if (f == "crst") crst_avg[i] => crst_avg[i + 1];
         }
         // places new value into first spot
         if (f == "cen") x => cen_avg[0];
         if (f == "spr") x => spr_avg[0];
+        if (f == "hfc") x => hfc_avg[0];
+        if (f == "rms") x => rms_avg[0];
         if (f == "crst") x => crst_avg[0];
         // sums the moving average vector
         for (int i; i < num; i++) {
             if (f == "cen") cen_avg[i] +=> sum;
             if (f == "spr") spr_avg[i] +=> sum;
+            if (f == "hfc") hfc_avg[i] +=> sum;
+            if (f == "rms") rms_avg[i] +=> sum;
             if (f == "crst") crst_avg[i] +=> sum;
         }
         // fir average
