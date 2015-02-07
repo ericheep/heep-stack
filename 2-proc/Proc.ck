@@ -1,8 +1,8 @@
-// YourDead.ck
-// bring-out-your-dead
+// Proc.ck
+// proc
 // Eric Heep
 
-public class YourDead {
+public class Proc{
 
     NanoKontrol n;
    
@@ -19,9 +19,6 @@ public class YourDead {
     for (int i; i < 8; i++) {
         spork ~ clappers(i);
     }
-    //spork ~ snares();
-    //spork ~ toms();
-    //spork ~ bass();
     spork ~ spins();
 
     // clapper nums, ms values, and velocities
@@ -83,88 +80,7 @@ public class YourDead {
         }
     }
 
-    // snare cycle
-    private void snares() {
-        while (true) {
-            for (int i; i < devi_snare.cap(); i++) {
-                (n.slider[1]/127.0 * 25) $ int => int vel;
-                if (vel > 0) {
-                    out.start("/devibot");
-                    out.add(devi_snare[Math.random2(0, devi_snare.cap() - 1)]);
-                    out.add(vel);
-                    out.send();
-                    ((128 - n.knob[1]) * Math.random2f(8.0,15.0))::ms => now;
-                }
-            }
-            for (int i; i < gana_snare.cap(); i++) {
-                (n.slider[1]/127.0 * 25) $ int => int vel;
-                if (vel > 0) {
-                    out.start("/ganapati");
-                    out.add(gana_snare[Math.random2(0, gana_snare.cap() - 1)]);
-                    out.add(vel);
-                    out.send();
-                    ((128 - n.knob[1]) * Math.random2f(8.0,15.0))::ms => now;
-                }
-            }
-            1::ms => now;
-        }
-    }
-
-    // tom cycle
-    private void toms() {
-        while (true) {
-            for (int i; i < devi_tom.cap(); i++) {
-                (n.slider[2]/127.0 * 15) $ int => int vel;
-                if (vel > 0) {
-                    out.start("/devibot");
-                    out.add(devi_tom[i]);
-                    out.add(vel);
-                    out.send();
-                    ((128 - n.knob[2]) * 10)::ms => now;
-                }
-            }
-            for (int i; i < gana_tom.cap(); i++) {
-                (n.slider[2]/127.0 * 15) $ int => int vel;
-                if (vel > 0) {
-                    out.start("/ganapati");
-                    out.add(gana_tom[i]);
-                    out.add(vel);
-                    out.send();
-                    ((128 - n.knob[2]) * 10)::ms => now;
-                }
-            }
-            1::ms => now;
-        }
-    }
-
-    // snare cycle
-    private void bass() {
-        while (true) {
-            for (int i; i < devi_bass.cap(); i++) {
-                (n.slider[3]/127.0 * 20) $ int => int vel;
-                if (vel > 0) {
-                    out.start("/devibot");
-                    out.add(devi_bass[i]);
-                    out.add(vel);
-                    out.send();
-                    ((128 - n.knob[3]) * 5)::ms => now;
-                }
-            }
-            for (int i; i < gana_bass.cap(); i++) {
-                (n.slider[3]/127.0 * 20) $ int => int vel;
-                if (vel > 0) {
-                    out.start("/ganapati");
-                    out.add(gana_bass[i]);
-                    out.add(vel);
-                    out.send();
-                    ((128 - n.knob[3]) * 5)::ms => now;
-                }
-            }
-            1::ms => now;
-        }
-    }
-
-    // snare cycle
+    // trimpspin cycle, not audible, but personal
     private void spins() {
         int range, off;
         while (true) {
@@ -190,15 +106,5 @@ public class YourDead {
             }
             1::ms => now;
         }
-    }
-
-    // spork ~ tester();
-
-    // 0, 1, 4-8, 10, 11
-    private void tester() {
-        out.start("/trimpspin");
-        out.add(79);
-        out.add(20);
-        out.send();
     }
 }
