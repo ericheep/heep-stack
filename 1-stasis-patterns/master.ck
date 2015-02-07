@@ -5,4 +5,4 @@
 Machine.add(me.dir() + "/CalorkOsc.ck");
 
 // main program
-Machine.add(me.dir() + "/stasis_patterns_redux.ck");
+Machine.add(me.dir() + "/stasis_patterns.ck");

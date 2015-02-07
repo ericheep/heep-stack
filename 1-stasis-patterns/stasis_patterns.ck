@@ -35,7 +35,7 @@ ADSR env[NUM_PLAYERS];
 int begin, sound;
 
 // starting values
-Math.random2(350,410) => float my_spd;
+Math.random2(550,650) => float my_spd;
 1000 + Math.random2f(0.0, 0.01) => float my_frq;
 1.0 => float my_oct;
 0.005 => float my_len;
@@ -57,7 +57,7 @@ float frq[NUM_PLAYERS];
 // sound chain set up
 for (int i; i < NUM_PLAYERS; i++) {
     sin[i] => env[i] => dac;
-    sin[i].gain(0.7);
+    sin[i].gain(1.0/(NUM_PLAYERS + 1));
 
     // initializing arrays
     1.0 => oct[i];
