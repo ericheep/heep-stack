@@ -10,21 +10,25 @@ public class YourDead {
     ("10.2.35.254", 50000) => out.dest;
 
     5 => int num_sections;
+    4 => int num_features;
+    
+    // array for scaling
+    float featre_arr[num_sections][num_features];
 
-    float rms_avg[num_sections];
-    float cen_avg[num_sections];
-    float spr_avg[num_sections];
-    float hfc_avg[num_sections];
-    float crs_avg[num_sections];
-
-    spork ~ clappers();
-    spork ~ snares();
-    spork ~ toms();
-    spork ~ bass();
+    // sporking instrument functions
+    for (int i; i < 8; i++) {
+        spork ~ clappers(i);
+    }
+    //spork ~ snares();
+    //spork ~ toms();
+    //spork ~ bass();
     spork ~ spins();
 
-    // clappers
-    [0, 1, 2, 3, 4, 14, 16, 17] @=> int clap_arr[];
+    // clapper nums, ms values, and velocities
+    // adjusted for the most "raucous" sound
+    [0,   1,  2,  3,  4, 14, 16, 17] @=> int clap_num[];
+    [32, 30, 20, 23, 24, 40, 26, 20] @=> int clap_ms[];
+    [15, 15, 15,  8,  7, 15, 10, 8] @=> int clap_vel[];
 
     // ganapati
     [2] @=> int gana_snare[];
@@ -36,50 +40,46 @@ public class YourDead {
     [0] @=> int devi_tom[];
     [6, 7, 8] @=> int devi_bass[];
 
+    // trimpspin
     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
      10, 11, 12, 13, 14, 15, 19] @=> int spin[];
 
-    public void features(float rms, float cen, float spr, float hfc, float crs) {
-        // <<< "RMS:", rms, "\t",  "Cen:", cen, "\t", "Spr:", spr, "\t", "HFC:", hfc, "\t", "Crst:", crs>>>; 
-        /*if (n.top[8]) {
-            featureActinos(rms, cen, spr, hfc, crs);
-        }
-        else {
-            controllerActions(); 
-        }
-        */
+    public void features(float cen, float spr, float hfc, float crs) {
+//         <<< "\t",  "Cen:", cen, "\t", "Spr:", spr, "\t", "HFC:", hfc, "\t", "Crst:", crs>>>; 
+        
 
     }
 
     public void learn(int section, float rms, float cen, float spr, float hfc, float crs) {
         if (section != -1) {
-            rms => rms_avg[section];
-            cen => cen_avg[section];
-            spr => spr_avg[section];
-            hfc => hfc_avg[section];
-            crs => crs_avg[section];
+//            rms => rms_avg[section];
+ //           cen => cen_avg[section];
+  //          spr => spr_avg[section];
+   //         hfc => hfc_avg[section];
+    //        crs => crs_avg[section];
         }
     }
 
+    // utility function, shows output of the learn function
     public void showAvgs() {
         <<< "Averages" >>>;
         for (int i; i < num_sections; i++) {
-            <<< i, " RMS:", rms_avg[i], "\t",  "Cen:", cen_avg[i], "\t", "Spr:", spr_avg[i], "\t", "HFC:", hfc_avg[i], "\t", "Crst:", crs_avg[i] >>>; 
+//            <<< i, "Cen:", cen_avg[i], "\t", "Spr:", spr_avg[i], "\t", "HFC:", hfc_avg[i], "\t", "Crst:", crs_avg[i] >>>; 
         }
     }
 
     // clapper cycle 
-    private void clappers() {
+    private void clappers(int idx) {
         while (true) {
-            (n.slider[0]/127.0 * 17) $ int => int vel;
-            if (vel > 0) {
+            n.slider[idx]/127.0 => float vel_scl;
+            if (vel_scl > 0) {
                 out.start("/clappers");
-                out.add(clap_arr[Math.random2(0, clap_arr.cap() - 1)]);
-                out.add(vel);
+                out.add(clap_num[idx]);
+                out.add((clap_vel[idx] * vel_scl) $ int);
                 out.send();
-                ((128.0 - n.knob[0]) * Math.random2f(5.0,8.0))::ms => now;
+                ((128.0 - n.knob[idx]) * Math.random2f(clap_ms[idx], clap_ms[idx] + 5.0))::ms => now;
             }
-            1::ms => now;
+            0.1::ms => now;
         }
     }
 
@@ -87,7 +87,7 @@ public class YourDead {
     private void snares() {
         while (true) {
             for (int i; i < devi_snare.cap(); i++) {
-                (n.slider[1]/127.0 * 28) $ int => int vel;
+                (n.slider[1]/127.0 * 25) $ int => int vel;
                 if (vel > 0) {
                     out.start("/devibot");
                     out.add(devi_snare[Math.random2(0, devi_snare.cap() - 1)]);
@@ -97,7 +97,7 @@ public class YourDead {
                 }
             }
             for (int i; i < gana_snare.cap(); i++) {
-                (n.slider[1]/127.0 * 28) $ int => int vel;
+                (n.slider[1]/127.0 * 25) $ int => int vel;
                 if (vel > 0) {
                     out.start("/ganapati");
                     out.add(gana_snare[Math.random2(0, gana_snare.cap() - 1)]);
@@ -168,7 +168,7 @@ public class YourDead {
     private void spins() {
         int range, off;
         while (true) {
-            (n.slider[4]/127.0 * spin.cap()) $ int => range;
+            (n.slider[8]/127.0 * spin.cap()) $ int - 1 => range;
             for (int i; i < range; i++) {
                 if (range > 0) {
                     0 => off;

@@ -95,7 +95,7 @@ while (true) {
             y.learn(section, rms, cen, spr, hfc, crst);
         }
         else {
-            y.features(rms, cen, spr, hfc, crst);
+           // y.features(rms, cen, spr, hfc, crst);
         }
     }
 
