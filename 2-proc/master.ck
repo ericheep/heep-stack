@@ -1,5 +1,5 @@
 // master.ck
-// bring-out-your-dead
+// proc
 // Eric heep
 
 // controller class
@@ -13,7 +13,7 @@ Machine.add(me.dir() + "/Visualization.ck");
 
 // other classes
 Machine.add(me.dir() + "/FIR.ck");
-Machine.add(me.dir() + "/YourDead.ck");
+Machine.add(me.dir() + "/Proc.ck");
 
 // main program
 Machine.add(me.dir() + "/main.ck");
