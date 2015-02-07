@@ -300,6 +300,6 @@ fun void score() {
 <<< " ", "" >>>; 
 <<< "    [a] - speed    [s] - envelope length    [d] - fundamental    [f] - octave", "" >>>; 
 <<< " ", "" >>>; 
-<<< "Press spacebar to start:", "" >>>;
+<<< "                              spacebar to begin", "" >>>;
 
 input();
