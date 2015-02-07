@@ -5,7 +5,7 @@
 // classes
 Mel mel;
 FIR fir;
-YourDead y;
+Proc proc;
 Matrix mat;
 Spectral spc;
 
@@ -92,10 +92,10 @@ while (true) {
         fir.fir(crst, "crst") => crst;
         fir.fir(rms_blob.fval(0), "rms") => rms;
         if (learn) {
-            y.learn(section, rms, cen, spr, hfc, crst);
+            proc.learn(section, rms, cen, spr, hfc, crst);
         }
         else {
-           // y.features(rms, cen, spr, hfc, crst);
+           // proc.features(rms, cen, spr, hfc, crst);
         }
     }
 
