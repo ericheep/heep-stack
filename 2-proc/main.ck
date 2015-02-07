@@ -62,7 +62,7 @@ fun void input() {
                 }
                 if (msg.ascii == 96) {
                     -1 => section;
-                    y.showAvgs();
+                    proc.calc();
                 }
             }
         }
