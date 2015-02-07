@@ -1,5 +1,5 @@
 // main.ck
-// bring-out-your-dead
+// proc
 // Eric Heep
 
 // classes
@@ -37,9 +37,9 @@ float cen, spr, crst, rms, hfc;
 // learning variable
 int learn, section;
 
+// for training min and max
 fun void input() {
     while (true) {
-        // waits for a keyboard message
         key => now;
         while (key.recv(msg)) {
             <<< msg.ascii >>>;
