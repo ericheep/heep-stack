@@ -1,16 +1,14 @@
-// tail-sort.ck
+// tail_sort.ck
 // Eric Heep
 
 HeapSend h;
 Patterns p;
 
-/*
 Hid hi;
 HidMsg msg;
 0 => int device;
 if (!hi.openKeyboard(device)) me.exit();
 <<< hi.name() + " is fully operational.", "">>>;
-*/
 
 int lead_off[6];
 
@@ -52,10 +50,6 @@ fun void go() {
     spork ~ bot();
 }
 
-// main program
-go();
-
-/*
 while (true) {
     hi => now;
     while (hi.recv(msg)) {
@@ -66,8 +60,5 @@ while (true) {
         }
     }
 }
-*/
 
 while (1::second => now);
-
-
