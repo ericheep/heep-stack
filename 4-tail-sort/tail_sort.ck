@@ -15,7 +15,7 @@ int lead_off[6];
 fun void top() {
     500::ms => dur beat;
     int top_ref_prv[];
-    h.arraySort("/top", beat, lead_off, p.patternF) @=> top_ref_prv;
+    h.arraySort("/top", beat, lead_off, p.patternA) @=> top_ref_prv;
     while (true) {
         h.arraySort("/top", beat, top_ref_prv, p.patternB) @=> top_ref_prv;
         500::ms => beat;
@@ -47,7 +47,7 @@ fun void bot() {
 fun void go() {
     <<< "~ here we go ~", "" >>>;
     spork ~ top();
-    spork ~ bot();
+    //spork ~ bot();
 }
 
 while (true) {

@@ -14,4 +14,4 @@ Machine.add("HeapSend.ck");
 Machine.add("Patterns.ck");
 
 // main program
-Machine.add("tail-sort.ck");
+Machine.add("tail_sort.ck");
