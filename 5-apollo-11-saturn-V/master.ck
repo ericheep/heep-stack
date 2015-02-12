@@ -11,6 +11,9 @@ Machine.add(me.dir() + "/mir-chuck/Subband.ck");
 // ml class
 Machine.add(me.dir() + "/mir-chuck/Kmeans.ck");
 
+// panning class
+Machine.add(me.dir() + "/MultiPan.ck");
+
 // LiSa classes
 Machine.add(me.dir() + "/LiSaCluster.ck");
 Machine.add(me.dir() + "/Reich.ck");
@@ -19,8 +22,5 @@ Machine.add(me.dir() + "/FFTNoise.ck");
 // midi controller class
 Machine.add(me.dir() + "/NanoKontrol.ck");
 
-// panning class
-Machine.add(me.dir() + "/MultiPan.ck");
-
 // main program
-Machine.add(me.dir() + "/main.ck");
+Machine.add(me.dir() + "/apollo11saturnV.ck");

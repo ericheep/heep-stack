@@ -2,18 +2,18 @@ SndBuf apollo;
 apollo.read(me.dir() + "apollo11saturnVaudio.wav");
 apollo.rate(1.0);
 
-Gain headphones;
+Gain headphones => dac.chan(5);
 Gain master;
 
 // LiSaCluster stuff
-LiSaCluster lc[3];
-MultiPan p_lc[lc.cap()];
-Gain lc_gain[lc.cap()];
+LiSaCluster lc[2];
+MultiPan lc_mp[lc.size()];
+Gain lc_gain[lc.size()];
 
 // Reich stuff
 Reich r[2];
-MultiPan p_r[r.cap()];
-Gain r_gain[r.cap()];
+MultiPan p_r[r.size()];
+Gain r_gain[r.size()];
 
 // FFTNoise
 FFTNoise fn;
@@ -27,7 +27,7 @@ for (int i; i < lc.cap(); i++) {
     // lc independent gains
     lc_gain[i].gain(0.0);
     // lc sound chain
-    apollo => lc[i] => lc_gain[i] => master => dac.chan(i);
+    apollo => lc[i] => lc_gain[i] => lc_mp[i];
     // lc initialize functions
     lc[i].fftSize(2048);
     lc[i].mfcc(1);
@@ -180,8 +180,8 @@ fun void masterParams() {
 // main loop
 while (true) {
     lcParams();
-    rParams();
-    fnParams();
+    //rParams();
+    //fnParams();
     masterParams();
     10::ms => now;
 }
