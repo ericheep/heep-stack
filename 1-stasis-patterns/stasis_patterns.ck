@@ -8,10 +8,11 @@ CalorkOsc c;
 
 // set your sending address
 c.myAddr("/eric");
+//10.0.0.6
 
 // add one IP and address at a time, two string arguments
-//c.addIp("10.40.19.208", "/mach");
-// c.addIp("10.0.0.4", "/bruce");
+c.addIp("10.0.0.5", "/shaurjya");
+c.addIp("10.0.0.2", "/danny");
 // c.addIp("10.0.0.6", "/danny");
 // c.addIp("10.0.0.7", "/dexter");
 
@@ -35,14 +36,14 @@ ADSR env[NUM_PLAYERS];
 int begin, sound;
 
 // starting values
-Math.random2(550,650) => float my_spd;
-1000 + Math.random2f(0.0, 0.01) => float my_frq;
-1.0 => float my_oct;
-0.005 => float my_len;
+Math.random2(50, 60) => float my_spd;
+2000 + Math.random2f(-4.0, 4.0) => float my_frq;
+4.0 => float my_oct;
+0.25 => float my_len;
 
 // frequency max and min
-1020 => float frq_max;
-980 => float frq_min;
+2100 => float frq_max;
+1900 => float frq_min;
 
 // length max and min, scales spd
 NUM_PLAYERS - 0.5 => float len_max;
@@ -244,25 +245,27 @@ fun void score() {
     <<< "     Time           Direction", "" >>>; 
     <<< "     ----           ---------", "" >>>; 
     <<< "     0:00 - 0:45    Press [t] to sound your pulse at anytime within the first 45 seconds,", "" >>>;
-    <<< "                    change your speed at will, but keep it between a slow and very slow cycle", "" >>>;
+    <<< "                    change your speed at will, but keep it between a fast and medium", "" >>>;
     45::second => now;
     <<< " ", "" >>>;
-    <<< "     0:45 - 1:15    Continue to change your speed at will, but keep it between a slow to medium cycle,", "" >>>;
+    <<< "     0:45 - 1:15    Continue to change your speed at will, but keep it between a fast to slow cycle,", "" >>>;
     <<< "                    if you lock into an interesting rhythm, feel free to let it ride", "" >>>;
     30::second => now;
     <<< " ", "" >>>;
-    <<< "     1:15 - 1:45    Continue to change your speed at will, but keep it between a medium to fast cycle,", "" >>>;
+    <<< "     1:15 - 1:45    There are no restrictions to the speed of your cycles, begin skewing", "" >>>;
+    <<< "                    your fundamental, go up exactly one octave over the course of 30 seconds", "" >>>;
     30::second => now;
     <<< " ", "" >>>;
-    <<< "     1:45 - 2:15    Slowly start to increase the length of your envelope, keep your speed between", "" >>>;
-    <<< "                    a fast to very fast cycle", "" >>>;
+    <<< "     1:45 - 2:15    Decrease the length of your envelope to it's smallest length, move your speed to", "" >>>;
+    <<< "                    a fast to very fast cycle, keep skewing your fundamental", "" >>>;
     45::second => now;
     <<< " ", "" >>>;
-    <<< "     2:15 - 3:00    Continue to increase the length of your envelope and begin slightly skewing your ", "" >>>;
-    <<< "                    fundamental, slowing speed to a medium to fast cycle ", "" >>>;
+    <<< "     2:15 - 3:00    Continue slightly skewing your fundamental, and jump down exactly two octaves", "" >>>;
+    <<< "                    over the course of the next 45 seconds, begin to slow your cycle carefully ", "" >>>;
     45::second => now; 
     <<< " ", "" >>>;
-    <<< "     3:00 - 3:30    Continue to increase the length of your envelope and slow your speed to a slow to medium cycle", "" >>>;
+    <<< "     3:00 - 3:30    You should be in the same octave range as everybody else, increase the length of", "" >>>;
+    <<< "                    your envelope and slow your speed to a slow to medium cycle", "" >>>;
     30::second => now;
     <<< " ", "" >>>;
     <<< "     3:30 - 5:00    This is a very long phase, continue to skew your fundamental, search for ", "" >>>;
@@ -270,21 +273,27 @@ fun void score() {
     <<< "                    and the length of your envelope should continue to increase", "" >>>; 
     90::second => now;
     <<< " ", "" >>>;
-    <<< "     5:00 - 5:45    Move up an octave only once during the next 45 seconds; continue to skew your,", "" >>>;
+    <<< "     5:00 - 5:45    Move down an octave only once during the next 45 seconds; continue to skew your,", "" >>>;
     <<< "                    fundamental, if your cycle is not already very very slow, adjust accordingly", "" >>>;
     45::second => now;
     <<< " ", "" >>>;
-    <<< "     5:45 - 6:30    Move up an octave only once during the next 45 seconds, begin to decrease the length", "" >>>;
-    <<< "                    of your envelope, do not get too short too soon", "" >>>;
+    <<< "     5:45 - 6:30    Quickly, move to a very fast cycle during the next 15 seconds, then hold", "" >>>;
+    <<< "                    that speed for the rest of the phase", "" >>>;
     45::second => now;
     <<< " ", "" >>>;
-    <<< "     6:30 - 7:00    Move up an octave only once during the next 30 seconds,", "" >>>;
-    <<< "                    continue to decrease the length of your envelope", "" >>>;
+    <<< "     6:30 - 7:00    Quickly, move to any speed during the next 10 seconds, then hold that speed", "" >>>; 
+    <<< "                    for the rest of the phase", "" >>>;
     30::second => now;
     <<< " ", "" >>>;
-    <<< "    7:00 - 8:00    You should now be at the shortest length envelope with a very slow cycle", "" >>>;
-    <<< "                   you have full control of the every parameter, do with it what you will", "" >>>;
+    <<< "     7:00 - 7:30    Quickly, move to a new speed during the next 5 seconds, then hold that speed", "" >>>;
+    <<< "                    for the rest of the phase, ", "" >>>;
+    30::second => now;
+    <<< " ", "" >>>;
+    <<< "     7:30 - 8:30    You have full control over the next minute", "" >>>;
     60::second => now;
+    <<< " ", "" >>>;
+    <<< "     8:30 - 9:00    Move to a very slow speed, ponder your life choices", "" >>>;
+    30::second => now;
 
     // fin
     for (int i; i < NUM_PLAYERS; i++) {
