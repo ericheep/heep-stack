@@ -17,13 +17,13 @@ NanoKontrol n;
 // LiSaCluster setup
 for (int i; i < lc_num; i++) {
     // lc independent gains
-    lc_gain[i].gain(0.0);
+    // lc_gain[i].gain(0.0);
     // lc sound chain
     apollo => lc[i];
     // lc initialize functions
     lc[i].fftSize(1024);
     lc[i].mfcc(1);
-    lc[i].gain(0.0);
+    lc[i].vol(0.0);
     lc[i].numClusters(4);
     lc[i].stepLength(50::ms);
     // alternate gain
@@ -36,9 +36,8 @@ fun void spinning() {
     float pan;
     while (true) {
         (pan + 0.001) % 2.0 => pan;
-        for (int i; i < lc_num; i++) {
-            lc[i].pan(pan - 1.0);
-        }
+        lc[0].pan(pan - 1.0);
+        lc[1].pan((pan - 1.0) * -1.0 + 1.0);
         0.1::ms => now;
     }
 }
@@ -55,8 +54,8 @@ fun void lcParams() {
         if (n.top[i] != lc_state[i]) {
             n.top[i] => lc_state[i];
             // turns on/off gain
-            if (lc_state[i]) lc_gain[i].gain(1.0);
-            else lc_gain[i].gain(0.0);
+            if (lc_state[i]) lc[i].state(1.0);
+            else lc[i].state(0.0);
         }
         // gain
         if (n.slider[i] != lc_vol[i]) {

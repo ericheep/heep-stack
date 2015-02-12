@@ -19,9 +19,7 @@ public class LiSaCluster extends Chubgraph{
     LiSa mic[5];
     MultiPan mp[5];
     for (int i; i < mic.cap(); i++) {
-        inlet => mic[i] => mp[i];
-        mic[i] => outlet;
-        mp[i].pan(0.0);
+        inlet => mic[i] => mp[i] => outlet;
     }
 
     UAnaBlob blob;
@@ -36,7 +34,6 @@ public class LiSaCluster extends Chubgraph{
     // control variables
     int num_clusters, play_clusters, rec_active, play_active, voice_active;
     float voice_pan;
-    5 => play_clusters;
 
     // length of samples
     dur step_length;
@@ -61,12 +58,6 @@ public class LiSaCluster extends Chubgraph{
     float mfcc_mx[0][0];
     // placeholder array for subband centroids 
     float subband_filts[0];
-
-    fun void state(float s) {
-        for (int i; i < mp.size(); i++) {
-            mp[i].vol(s); 
-        }
-    }
 
     // toggles collection of root-mean square data
     fun void rms(int on) {
@@ -94,12 +85,6 @@ public class LiSaCluster extends Chubgraph{
         if (on) {
             [0.0, 100.0, 500.0, 1000.0, 10000.0, 22050.0] @=> subband_filts; 
             subband_filts.cap() - 1 => subcent_feats;
-        }
-    }
-
-    fun void vol(float v) {
-        for (int i; i < mp.size(); i++) {
-            mic[i].gain(v);
         }
     }
 
@@ -216,21 +201,13 @@ public class LiSaCluster extends Chubgraph{
         s => step_length;
     }
 
-    fun void pan(float p) {
-        float mod;
-        for (int i; i < play_clusters; i++) {
-            (p + 1.0) * 2.0 * 1.0/play_clusters * i % 2.0 => mod;
-            mp[i].pan(mod - 1.0);
-        }
-    }
-
-    // playback
+    // plays back samples in clusters
     fun void play(int p) {
         // ensures model is finished training before playing
-        hop_time * 2 => now;
+        hop_time => now;
 
         // plays until play(0) is called
-        if (p) {
+        if (p==1) {
             1 => play_active;
             spork ~ playing();
         }
@@ -239,29 +216,33 @@ public class LiSaCluster extends Chubgraph{
         }
     }
 
+    // method for multiple voice output
+    fun void play(int p) {
+        // ensures model is finished training before playing
+        hop_time * 2 => now;
+
+        // plays until play(0) is called
+        if (p) {
+            1 => play_active;
+            spork ~ player();
+        }
+        if (p == 0) {
+            0 => play_active;
+        }
+    }
+
     fun void playing() {
         // returns true after a pairing idx is found
-        int check; 
-        for (int i; i < play_clusters; i++) {
-            mic[i].play(1);
-        }
         while (play_active) {
             for (int i; i < play_clusters; i++) {
-                0 => check;
-                mic[i].rampUp(10::ms);
-                while (check == 0) {
                     Math.random2(0, idx.cap() - 1) => int rand;
                     if (idx[rand] == i) {
-                        mic[i].playPos(rand * step_length);
+                        mic[i].playPos(i, rand * step_length);
                         1 => check;
                     }
                 }
             }
-            step_length - 10::ms => now;
-            for (int i; i < play_clusters; i++) {
-                mic[i].rampDown(10::ms);
-            }
-            10::ms => now;
+            step_length => now;
         }
     }
 
