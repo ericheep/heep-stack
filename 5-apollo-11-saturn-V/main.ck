@@ -1,3 +1,7 @@
+SndBuf apollo;
+apollo.read(me.dir() + "apollo11saturnVaudio.wav");
+apollo.rate(1.0);
+
 Gain headphones;
 Gain master;
 
@@ -23,11 +27,11 @@ for (int i; i < lc.cap(); i++) {
     // lc independent gains
     lc_gain[i].gain(0.0);
     // lc sound chain
-    adc => lc[i] => lc_gain[i] => master => dac.chan(i);
+    apollo => lc[i] => lc_gain[i] => master => dac.chan(i);
     // lc initialize functions
+    lc[i].fftSize(2048);
     lc[i].mfcc(1);
     lc[i].gain(0.0);
-    lc[i].fftSize(1024);
     lc[i].numClusters(4);
     lc[i].stepLength(100::ms);
     // alternate gain
@@ -39,7 +43,7 @@ for (int i; i < r.cap(); i++) {
     // r independent gains
     r_gain[i].gain(0.0);
     // r sound chain
-    adc => r[i] => r_gain[i] => master => dac.chan(i);
+    apollo => r[i] => r_gain[i] => master => dac.chan(i);
     // r initialize functions
     r[i].randomPos(1);
     r[i].voices(16);

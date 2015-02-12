@@ -36,13 +36,12 @@ float cen, spr, crst, rms, hfc;
 
 // learning variable
 int learn, section;
-
+1 => learn;
 // for training min and max
 fun void input() {
     while (true) {
         key => now;
         while (key.recv(msg)) {
-            <<< msg.ascii >>>;
             if (msg.isButtonDown()) {
                 1 => learn;
                 if (msg.ascii == 49) {
@@ -63,6 +62,7 @@ fun void input() {
                 if (msg.ascii == 96) {
                     -1 => section;
                     proc.calc();
+                    0 => learn;
                 }
             }
         }
@@ -90,12 +90,12 @@ while (true) {
         fir.fir(spr, "spr") => spr;
         fir.fir(hfc, "hfc") => hfc;
         fir.fir(crst, "crst") => crst;
-        fir.fir(rms_blob.fval(0), "rms") => rms;
+
         if (learn) {
-            proc.learn(section, rms, cen, spr, hfc, crst);
+            proc.learn(section, [cen, hfc]);
         }
         else {
-           // proc.features(rms, cen, spr, hfc, crst);
+            proc.features([cen, hfc]);
         }
     }
 
