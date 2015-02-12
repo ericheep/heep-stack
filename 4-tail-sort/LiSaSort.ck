@@ -219,7 +219,7 @@ public class LiSaSort {
                 env[i][mode][player].keyOn();
                 env[i][mode][player].set(10::ms, length - beat/8.0, 0.2, beat/8.0);
                 for (int j; j < voices; j++) {
-                    mic[i][mode][player].loopStart(j, beat);
+                    mic[i][mode][player].loopStart(j, 0::samp);
                     mic[i][mode][player].loopEnd(j, beat * 2.0);
                     mic[i][mode][player].playPos(j, j * (beat * 2.0) * pos);
                     mic[i][mode][player].play(j, 1);

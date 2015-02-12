@@ -18,7 +18,6 @@ fun void top() {
     h.arraySort("/top", beat, lead_off, p.patternA) @=> top_ref_prv;
     while (true) {
         h.arraySort("/top", beat, top_ref_prv, p.patternB) @=> top_ref_prv;
-        500::ms => beat;
         h.arraySort("/top", beat, top_ref_prv, p.patternC) @=> top_ref_prv;
         h.arraySort("/top", beat, top_ref_prv, p.patternD) @=> top_ref_prv;
         h.arraySort("/top", beat, top_ref_prv, p.patternE) @=> top_ref_prv;
@@ -34,7 +33,6 @@ fun void bot() {
     h.arraySort("/bot", beat, lead_off, p.patternA) @=> bot_ref_prv;
     while (true) {
         h.arraySort("/bot", beat, bot_ref_prv, p.patternB) @=> bot_ref_prv;
-        250::ms => beat;
         h.arraySort("/bot", beat, bot_ref_prv, p.patternC) @=> bot_ref_prv;
         h.arraySort("/bot", beat, bot_ref_prv, p.patternD) @=> bot_ref_prv;
         h.arraySort("/bot", beat, bot_ref_prv, p.patternE) @=> bot_ref_prv;
@@ -47,7 +45,7 @@ fun void bot() {
 fun void go() {
     <<< "~ here we go ~", "" >>>;
     spork ~ top();
-    //spork ~ bot();
+    spork ~ bot();
 }
 
 while (true) {
