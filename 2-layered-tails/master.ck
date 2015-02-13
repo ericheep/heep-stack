@@ -1,5 +1,5 @@
 // master.ck
-// tail-sort
+// layered-tails
 // Eric Heep
 
 // array functions
@@ -14,4 +14,4 @@ Machine.add("HeapSend.ck");
 Machine.add("Patterns.ck");
 
 // main program
-Machine.add("tail_sort.ck");
+Machine.add("layered_tails.ck");
