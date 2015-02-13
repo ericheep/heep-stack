@@ -18,6 +18,7 @@ Machine.add(me.dir() + "/MultiPan.ck");
 Machine.add(me.dir() + "/LiSaCluster.ck");
 Machine.add(me.dir() + "/Reich.ck");
 Machine.add(me.dir() + "/FFTNoise.ck");
+Machine.add(me.dir() + "/Sort.ck");
 
 // midi controller class
 Machine.add(me.dir() + "/NanoKontrol.ck");
