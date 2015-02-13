@@ -1,19 +1,26 @@
 SndBuf apollo;
 apollo.read(me.dir() + "apollo11saturnVaudio.wav");
 apollo.rate(1.0);
-<<< "~ here we go ~", "" >>>;
 
 apollo => Gain headphones => dac.chan(5);
 
 // midi control
 NanoKontrol n;
+Quneo q;
+<<< "~ here we go ~", "" >>>;
 
+// Nano
 // 0, 1, lc
 // 2, 3, reich
 // 4, 5, sort
 // 6, noise
 // 7, gate 
 // 8, main
+
+// Quneo
+// pads, spatialized micro/phonogene
+
+// NanoKontrol Classes ~~~~~~~~~~~~~~~~~~~~~~+=+
 
 // LiSaCluster ~~~~~~~~~~~~~~~~~~~~~~
 LiSaCluster lc[2];
@@ -92,17 +99,9 @@ for (int i; i < s_num; i++) {
 int s_vol[s_num];
 int s_state[s_num];
 int s_latch[s_num];
-
-// Gate ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-apollo => Gain g => MultiPan g_mp;
-g.gain(0.0);
-g_mp.vol(0.0);
-
-// Gate setup
-int g_vol;
-int g_state;
-int g_pan;
-float g_spin;
+int s_pan[s_num];
+float s_mod[s_num];
+float s_spin[s_num];
 
 // FFTNoise ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 apollo => FFTNoise fn => MultiPan fn_mp;
@@ -115,6 +114,69 @@ int fn_vol;
 int fn_state;
 int fn_pan;
 float fn_chance;
+
+// Gate ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+apollo => Gain g => MultiPan g_mp;
+g.gain(0.0);
+g_mp.vol(0.0);
+
+// Gate setup
+int g_vol;
+int g_state;
+int g_pan;
+float g_spin;
+
+// Quneo Classes ~~~~~~~~~~~~~~~~~~~~~~+=+
+
+// Micro
+Micro m[12];
+Gain m_g[m.size()];
+m.size() => int m_num;
+
+// array for outside loops
+[ 1,  0,  4,
+  8, 12, 13, 
+ 14, 15, 11,
+  7,  3,  2] @=> int m_q[]; 
+
+[ 0,  0,  0,
+  1,  1,  1,
+  3,  3,  3,
+  4,  4,  4] @=> int m_chan[];
+
+for (int i; i < m_num; i++) {
+    apollo => m[i] => m_g[i] => dac.chan(m_chan[i]);
+    m[i].loopTime(50::ms * ((i % 3 ) + 1));
+    m[i].rampTime(20::ms);
+}
+
+int m_latch[m_num];
+int m_vol;
+
+// Special Micro
+MicroPan sm[4]; 
+Gain sm_g[sm.size()];
+sm.size() => int sm_num;
+
+[ 5,  6,
+  9, 10] @=> int sm_q[];
+
+[-0.5, 0.0, 0.5, 1.0, -1.0] @=> float amy[];
+[-0.5, 0.0, -0.5, 0.0, 0.5, 0.0, 0.5, 1.0, 0.5, 1.0] @=> float rodrigo[];
+[0.5, 0.5, 0.0, -0.5, -0.5, 0.0, 1.0, 1.0, 0.0] @=> float eric[];
+
+for (int i; i < sm_num; i++) {
+    apollo => sm[i];
+    sm[i].loopTime(100::ms);
+    sm[i].rampTime(20::ms);
+}
+
+sm[0].spatialArray(amy);
+sm[1].spatialArray(rodrigo);
+sm[2].spatialArray(eric);
+int sm_latch[sm_num];
+int sm_lock;
+int sm_lock_latch;
 
 // NanoKontrols ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -228,6 +290,11 @@ fun void sParams() {
             n.slider[i + lc_num + r_num] => s_vol[i];
             s[i].gain(s_vol[i]/127.0);
         }
+        // pan
+        if (n.knob[i + lc_num + r_num] != s_pan[i]) {
+            n.knob[i + lc_num + r_num] => s_pan[i];
+            (s_pan[i]/127.0) * 0.01 => s_spin[i];
+        }
         // record
         if (n.bot[i + lc_num + r_num] && s_latch[i] == 0) {
             s[i].play(0);
@@ -239,17 +306,15 @@ fun void sParams() {
             s[i].play(1);
             0 => s_latch[i];
         }
-    }
-}
-
-// Sort panning
-fun void sSpin() {
-    float pan;
-    while (true) {
-        (pan + 0.001) % 2.0 => pan;
-        s_mp[0].pan(pan - 1.0);
-        s_mp[1].pan((pan - 1.0) * -1.0 + 1.0);
-        0.2::ms => now;
+        // spin 
+        if (i == 0 && s_pan[i] != 0.0) {
+            (s_mod[i] + s_spin[i]) % 1.0 => s_mod[i];
+            s_mp[i].pan(s_mod[i] * 2.0 - 1.0);
+        }
+        else if (i == 1 && s_pan[i] != 0.0) {
+            (s_mod[i] + s_spin[i]) % 1.0 => s_mod[i];
+            s_mp[i].pan((s_mod[i] * -1.0 + 1.0) * 2.0 - 1.0);
+        }
     }
 }
 
@@ -323,11 +388,57 @@ fun void gSpin() {
     }
 }
 
+// Micro and Special Micro controls
+fun void mParams() {
+    if (q.fader != m_vol) {
+        q.fader => m_vol;
+        for (int i; i < m_num; i++) {
+            m_vol/127.0 => m_g[i].gain;
+        }
+        for (int i; i < sm_num; i++) {
+            m_vol/127.0 => sm[i].vol;
+        }
+    }
+    for (int i; i < m_num; i++) {
+        if (q.pad[m_q[i]] > 0 && m_latch[i] == 0) {
+            m[i].gain(q.pad[m_q[i]]/127.0);
+            m[i].loop(1); 
+            1 => m_latch[i];
+        }
+        if (q.pad[m_q[i]] == 0 && m_latch[i]) {
+            m[i].loop(0);
+            0 => m_latch[i];
+        }
+    }
+    for (int i; i < sm_num; i++) {
+        if (q.pad[sm_q[i]] > 0 && sm_latch[i] == 0) {
+            sm[i].micVol(q.pad[sm_q[i]]/127.0);
+            sm[i].loop(1);
+            1 => sm_latch[i];
+        }
+        if (sm_lock == 0) {
+            if (q.pad[sm_q[i]] == 0 && sm_latch[i]) {
+                sm[i].loop(0);
+                0 => sm_latch[i];
+            }
+        }
+    }
+    if (q.stop > 0 && sm_lock_latch == 0) {
+        (sm_lock + 1) % 2 => sm_lock;
+        1 => sm_lock_latch; 
+    }
+    if (q.stop == 0 && sm_lock_latch) {
+        0 => sm_lock_latch;
+    }
+}
+
+// NOTE: maybe incorporate these spin functions into main param functions
+// less sporking, easier calc, maybe, like Sort
+
 // automatic panning functions
 spork ~ lcSpin(0); 
 spork ~ lcSpin(1); 
 spork ~ rSpin();
-spork ~ sSpin();
 spork ~ fnSpin();
 spork ~ gSpin();
 
@@ -338,6 +449,6 @@ while (true) {
     fnParams();
     sParams();
     gParams();
-    //masterParams();
+    mParams();
     10::ms => now;
 }

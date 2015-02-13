@@ -8,7 +8,7 @@ public class Micro extends Chubgraph{
 
     // scoped variables
     int active;
-    8.0::second => dur length;
+    2.0::second => dur length;
     100::ms => dur ramp;
 
     fun void rampTime(dur r) {

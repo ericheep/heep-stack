@@ -81,14 +81,14 @@ public class Sort extends Chubgraph {
         mic.play(1);
         arg.cap() => hard_max;
         while(play_active) {
-            mic.rampUp(10::ms);
+            mic.rampUp(20::ms);
             if (inc < arg.cap() || inc > -1) {
                 //<<< "Inc:", inc, "Min", min, "Max:", max, "" >>>;
                 mic.playPos(step_dur * arg[inc]); 
             }
             step_dur - 20::ms => now;
-            mic.rampDown(10::ms);
-            10::ms => now;
+            mic.rampDown(20::ms);
+            20::ms => now;
 
             direction +=> inc;
             if (inc == hard_max - 1 || inc == max) {
