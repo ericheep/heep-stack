@@ -26,19 +26,28 @@ for (int i; i < lc_num; i++) {
     apollo => lc[i];
     // lc initialize functions
     lc[i].fftSize(1024);
-    lc[i].mfcc(1);
     lc[i].vol(0.0);
-    lc[i].numClusters(4);
+    lc[i].numClusters(5);
     lc[i].stepLength(50::ms);
     // alternate gain
     lc[i] => headphones;
     lc[i].pan(0.0);
 }
 
+// features for first cluster
+lc[0].centroid(1);
+lc[0].crest(1);
+
+// features for second cluster
+lc[1].hfc(1);
+lc[1].subbandCentroids(1);
+
 int lc_vol[lc_num];
 int lc_pos[lc_num];
 int lc_latch[lc_num];
 int lc_state[lc_num];
+int lc_pan[lc_num];
+float lc_spin[lc_num];
 
 // Reich ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Reich r[2];
@@ -56,6 +65,7 @@ for (int i; i < r_num; i++) {
     r[i].randomPos(1);
     r[i].voices(16);
     r[i].bi(1);
+    r[i].randomPos(1);
     // alternate gain
     r[i] => headphones;
 }
@@ -85,10 +95,14 @@ int s_latch[s_num];
 
 // Gate ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 apollo => Gain g => MultiPan g_mp;
+g.gain(0.0);
+g_mp.vol(0.0);
 
 // Gate setup
 int g_vol;
 int g_state;
+int g_pan;
+float g_spin;
 
 // FFTNoise ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 apollo => FFTNoise fn => MultiPan fn_mp;
@@ -99,30 +113,10 @@ fn_mp.vol(0.0);
 
 int fn_vol;
 int fn_state;
+int fn_pan;
+float fn_chance;
 
-// automatic panning functions
-spork ~ lcSpinning(); 
-spork ~ sSpinning();
-
-fun void lcSpinning() {
-    float pan;
-    while (true) {
-        (pan + 0.001) % 2.0 => pan;
-        lc[0].pan(pan - 1.0);
-        lc[1].pan((pan - 1.0) * -1.0 + 1.0);
-        lc_ms::ms => now;
-    }
-}
-
-fun void sSpinning() {
-    float pan;
-    while (true) {
-        (pan + 0.001) % 2.0 => pan;
-        s_mp[0].pan(pan - 1.0);
-        s_mp[1].pan((pan - 1.0) * -1.0 + 1.0);
-        0.2::ms => now;
-    }
-}
+// NanoKontrols ~~~~~~~~~~~~~~~~~~~~~~~~
 
 // LiSaCluster controls
 fun void lcParams() {
@@ -150,6 +144,27 @@ fun void lcParams() {
             lc[i].play(1);
             0 => lc_latch[i];
         }
+        if (n.knob[i] != lc_pan[i]) {
+            n.knob[i] => lc_pan[i];
+            lc_pan[i]/127.0 => lc_spin[i];
+        }
+    }
+}
+
+// LiSaCluster panning
+fun void lcSpin(int idx) {
+    float mod, pan;
+    while (true) {
+        if (idx) {
+            (mod + lc_spin[idx] * .0001) % 2.0 => mod;
+            mod - 1.0 => pan;
+        }
+        else {
+            (mod + lc_spin[idx] * .0001) % 2.0 => mod;
+            (mod * -1.0 + 1.0) => pan;
+        }
+        lc[idx].pan(pan);
+        0.1::ms => now;
     }
 }
 
@@ -187,6 +202,17 @@ fun void rParams() {
     }
 }
 
+// Reich panning
+fun void rSpin() {
+    float pan;
+    while (true) {
+        (pan + 0.000001) % 2.0 => pan;
+        r_mp[0].pan(pan - 1.0);
+        r_mp[1].pan((pan - 1.0) * -1.0 + 1.0);
+        0.1::ms => now;
+    }
+}
+
 // Sort controls
 fun void sParams() {
     for (int i; i < s_num; i++) {
@@ -204,7 +230,6 @@ fun void sParams() {
         }
         // record
         if (n.bot[i + lc_num + r_num] && s_latch[i] == 0) {
-        <<< i + lc_num + r_num >>>;
             s[i].play(0);
             s[i].record(1);
             1 => s_latch[i];
@@ -217,6 +242,16 @@ fun void sParams() {
     }
 }
 
+// Sort panning
+fun void sSpin() {
+    float pan;
+    while (true) {
+        (pan + 0.001) % 2.0 => pan;
+        s_mp[0].pan(pan - 1.0);
+        s_mp[1].pan((pan - 1.0) * -1.0 + 1.0);
+        0.2::ms => now;
+    }
+}
 
 // FFTNoise controls
 fun void fnParams() {
@@ -234,6 +269,23 @@ fun void fnParams() {
         if (fn_vol == 0) fn.listen(0);
         else fn.listen(1);
     }
+    if (n.knob[6] != fn_pan) {
+        n.knob[6] => fn_pan;
+        fn_pan/127.0 => fn_chance;
+
+    }
+}
+
+// FTTNoise panning
+fun void fnSpin() {
+    float pan;
+    while (true) {
+        Math.random2f(0.0, 1.0) => pan;
+        if (fn_chance > Math.random2f(0.0, 1.0)) {
+            fn_mp.pan(pan * 2.0 - 1.0); 
+        }
+        (500 * (fn_chance * -1.0 + 1.0))::ms + 100::ms => now;
+    }
 }
 
 // Gate controls
@@ -250,7 +302,34 @@ fun void gParams() {
         n.slider[7] => g_vol;
         g.gain(g_vol/127.0);
     }
+    if (n.knob[7] != g_pan) {
+        n.knob[7] => g_pan; 
+        if (g_pan == 0) {
+            g_mp.pan(0.0);
+        }
+        g_pan/127.0 => g_spin;
+    }
 }
+
+// Gate panning
+fun void gSpin() {
+    float pan;
+    while (true) {
+        if (g_spin){
+            (g_spin * .001 + pan) % 1.0 => pan;
+            g_mp.pan(pan * 2.0 - 1.0);
+        }
+        1::ms => now;
+    }
+}
+
+// automatic panning functions
+spork ~ lcSpin(0); 
+spork ~ lcSpin(1); 
+spork ~ rSpin();
+spork ~ sSpin();
+spork ~ fnSpin();
+spork ~ gSpin();
 
 // main loop
 while (true) {
@@ -258,6 +337,7 @@ while (true) {
     rParams();
     fnParams();
     sParams();
+    gParams();
     //masterParams();
     10::ms => now;
 }
