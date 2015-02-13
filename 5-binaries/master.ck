@@ -1,9 +1,8 @@
 // master.ck
-// begins Binary Sines
-// Eric Heep, CalArts Music Tech
+// binaries 
+// Eric Heep
 
 me.dir() + "/CirclePan.ck" => Machine.add;
 me.dir() + "/Binary.ck" => Machine.add;
 me.dir() + "/Quneo.ck" => Machine.add;
-me.dir() + "/sines.ck" => Machine.add;
-//me.dir() + "/channelTest.ck" => Machine.add;
+me.dir() + "/binaries.ck" => Machine.add;
