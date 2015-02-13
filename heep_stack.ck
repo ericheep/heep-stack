@@ -1,24 +1,62 @@
-// heep_stack.ck
-// A collection of works by Eric Heep.
+
+// California Institue of the Arts
+// The Herb Alpert School of Music at CalArts
+// Presents
+
+// heep/stack
+
+// A collection of works by MFA student Eric Heep
+// Music Technology, MTIID
+
 
 ProgramNotes pn;
 
 ["stasis patterns", 
-"bring out your dead",
-"impurities II (tentative)",
-"tail sort (tentative)", 
+"layered tails",
+"rostftko", 
 "apollo 11 saturn V", 
-"binary sines"] @=> string program[];
+"binaries"] @=> string program[];
 
-// here we go!
+// ~ here we go
 <<< "Program Notes", "" >>>;
 <<< "-", "" >>>;
 
 for (int i; i < program.cap(); i++) {
-    <<< i + 1, "_", program[i], "" >>>;
+    <<< i + 1, "-", program[i], "" >>>;
     <<< pn.notes(program[i]), "" >>>;
-    <<< "---", "" >>>;
+    <<< "-", "" >>>;
 }
 
-// for Amy, who trust me to move too far away,
-// to study of all things, music technology
+
+// Saturday, February 14th, 2015
+// 2:00 PM
+// Roy O. Disney Music Hall
+
+// Thanks to Manuel, Shauryja, Edward, Justin, Danny,
+// Ajay, Jordan, Owen, and anyone else I might have forgotten 
+
+// for Amy
+
+
+class ProgramNotes {
+
+    fun string notes(string n) {
+        if (n == "stasis patterns") {
+            return "a network piece for the CalArts
+            live coding/laptop ensemble (Calork)";
+        }
+        if (n == "layered tails") {
+            return "a meditation";
+        }
+        if (n == "rostftko") {
+            return "'Silence is so accurate', M. Rothko";
+        }
+        if (n == "apollo 11 saturn V") {
+            return "'Science is not only compatible with spirituality;
+            it is a profound source of spirituality', C. Sagan" ; 
+        }
+        if (n == "binaries") {
+            return "growing systems, splitting the octave";
+        }
+    }
+}
