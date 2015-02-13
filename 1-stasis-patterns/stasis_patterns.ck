@@ -39,6 +39,7 @@ Math.random2(50, 60) => float my_spd;
 2000 + Math.random2f(-4.0, 4.0) => float my_frq;
 4.0 => float my_oct;
 0.25 => float my_len;
+3 => int my_reg;
 
 // frequency max and min
 2100 => float frq_max;
@@ -46,7 +47,7 @@ Math.random2(50, 60) => float my_spd;
 
 // length max and min, scales spd
 NUM_PLAYERS - 0.5 => float len_max;
-0.005 => float len_min;
+0.05 => float len_min;
 
 // storage for all sine stuffs
 float oct[NUM_PLAYERS];
@@ -128,13 +129,9 @@ fun void instructions() {
     }
     else {
         <<< " ", "" >>>;
-        <<< "                          S T A S I S  P A T T E R N S ", "" >>>; 
-        <<< " ", "" >>>;
         <<< "    [q] + speed    [w] + envelope length    [e] + fundamental    [r] + octave", "" >>>; 
         <<< " ", "" >>>; 
         <<< "    [a] - speed    [s] - envelope length    [d] - fundamental    [f] - octave", "" >>>; 
-        <<< " ", "" >>>; 
-        <<< " ", "" >>>; 
     }
 }
 
@@ -179,42 +176,48 @@ fun void action(int key) {
     // w, increases length 
     if (key == 119) {
         if (my_len < len_max) {
-            0.002 +=> my_len; 
+            0.02 +=> my_len; 
+            send("/l", my_len);
         }
-        send("/l", my_len);
     }
     // w, decreases length
     if (key == 115) {
         if (my_len > len_min) {
-            0.002 -=> my_len; 
+            0.02 -=> my_len; 
+            send("/l", my_len);
         }
-        send("/l", my_len);
     }
     // w, raises frequency 
     if (key == 101) {
         if (my_frq < frq_max) {
-            0.1 +=> my_frq; 
+            0.3 +=> my_frq; 
+            send("/f", my_frq);
         }
-        send("/f", my_frq);
     }
     // s, lowers frequency 
     if (key == 100) {
         if (my_frq >= frq_min) {
-            0.1 -=> my_frq; 
+            0.3 -=> my_frq; 
+            send("/f", my_frq);
         }
-        send("/f", my_frq);
     }
     // e, doubles octave
     if (key == 114) {
         2.0 *=> my_oct; 
+        my_reg++;
         send("/o", my_oct);
+        // dumb debug thing
+        send("/f", my_frq);
     }
     // d, doubles octave 
     if (key == 102) {
-        if (my_oct> 1.0) {
+        if (my_oct >= 1.0) {
+            my_reg--;
             2.0 /=> my_oct; 
+            send("/o", my_oct);
+            // dumb debug thing
+            send("/f", my_frq);
         }
-        send("/o", my_oct);
     }
     if (key == 116 && sound == 0) {
         1 => sound;
@@ -228,7 +231,10 @@ fun void action(int key) {
     if (key == 32) { 
         instructions();
     }
-    10::ms => now;
+    if (key == 122) {
+        status();
+    }
+    1::ms => now;
 }
 
 // send to all the players
@@ -239,59 +245,73 @@ fun void send(string param, float val) {
     }
 }
 
+fun void status() {
+    my_spd $ int + "ms" => string speed;
+    (my_len * my_spd) $ int + "ms" => string length;
+    <<< " ", "" >>>;
+    <<< "     [spd]", speed, "\t [env]:", length,"\t [oct]", my_reg, "\t [fund]", my_frq >>>;
+}
+
 fun void score() {
+    status();
     <<< " ", "" >>>;
-    <<< "     Time           Direction", "" >>>; 
-    <<< "     ----           ---------", "" >>>; 
-    <<< "     0:00 - 0:45    Press [t] to sound your pulse at anytime within the first 45 seconds,", "" >>>;
-    <<< "                    change your speed at will, but keep it between a fast and medium", "" >>>;
+    <<< "         Time           Direction", "" >>>; 
+    <<< "         ----           ---------", "" >>>; 
+    <<< "         0:00 - 0:45    Press [t] to sound your pulse at anytime within", "" >>>;
+    <<< "                        the first 45 seconds, change your speed at will", "" >>>;
+    <<< "                        but keep it between a fast and medium cycle", "" >>>;
     45::second => now;
     <<< " ", "" >>>;
-    <<< "     0:45 - 1:15    Continue to change your speed at will, but keep it between a fast to slow cycle,", "" >>>;
-    <<< "                    if you lock into an interesting rhythm, feel free to let it ride", "" >>>;
+    <<< "         0:45 - 1:15    Move to a fast to very fast speed during the next", "" >>>;
+    <<< "                        10 seconds, then hold that speed", "" >>>;
     30::second => now;
     <<< " ", "" >>>;
-    <<< "     1:15 - 1:45    There are no restrictions to the speed of your cycles, begin skewing", "" >>>;
-    <<< "                    your fundamental, go up exactly one octave over the course of 30 seconds", "" >>>;
+    <<< "         1:15 - 1:45    Begin opening your envelope while moving to", "" >>>;
+    <<< "                        to a slow to medium speed", "" >>>;
     30::second => now;
     <<< " ", "" >>>;
-    <<< "     1:45 - 2:15    Decrease the length of your envelope to it's smallest length, move your speed to", "" >>>;
-    <<< "                    a fast to very fast cycle, keep skewing your fundamental", "" >>>;
+    <<< "         1:45 - 2:15    Move to a medium speed during the next 10 seconds,", "" >>>;
+    <<< "                        then hold that speed", "" >>>;
     45::second => now;
     <<< " ", "" >>>;
-    <<< "     2:15 - 3:00    Continue slightly skewing your fundamental, and jump down exactly two octaves", "" >>>;
-    <<< "                    over the course of the next 45 seconds, begin to slow your cycle carefully ", "" >>>;
+    <<< "         2:15 - 3:00    Jump down one octave (from octave 3 to octave 2)", "" >>>;
+    <<< "                        over the next 45 seconds, move to a slow speed ", "" >>>;
     45::second => now; 
     <<< " ", "" >>>;
-    <<< "     3:00 - 3:30    You should be in the same octave range as everybody else, increase the length of", "" >>>;
-    <<< "                    your envelope and slow your speed to a slow to medium cycle", "" >>>;
+    <<< "         3:00 - 3:30    Move to a fast speed during the next 10 seconds,", "" >>>;
+    <<< "                        then hold that speed, skew your fundamental", "" >>>;
     30::second => now;
     <<< " ", "" >>>;
-    <<< "     3:30 - 5:00    This is a very long phase, continue to skew your fundamental, search for ", "" >>>;
-    <<< "                    severe beatings and harsh dissonances; your speed should continue to slow", "" >>>;
-    <<< "                    and the length of your envelope should continue to increase", "" >>>; 
+    <<< "         3:30 - 5:00    This is a very long phase, move to a very slow", "" >>>;
+    <<< "                        speed, after you're sufficiently slow, ensure", "" >>>;
+    <<< "                        your envelope is long, and then skew your", "" >>>;
+    <<< "                        fundamental while searching for severe beatings", "" >>>;
+    <<< "                        and harsh dissonances", "" >>>;
     90::second => now;
     <<< " ", "" >>>;
-    <<< "     5:00 - 5:45    Move down an octave only once during the next 45 seconds; continue to skew your,", "" >>>;
-    <<< "                    fundamental, if your cycle is not already very very slow, adjust accordingly", "" >>>;
+    <<< "         5:00 - 5:45    Move down an octave (from octave 2 to octave 1)", "" >>>;
+    <<< "                        once during the next 45 seconds, skew your", "" >>>;
+    <<< "                        fundamental at will", "" >>>;
     45::second => now;
     <<< " ", "" >>>;
-    <<< "     5:45 - 6:30    Quickly, move to a very fast cycle during the next 15 seconds, then hold", "" >>>;
-    <<< "                    that speed for the rest of the phase", "" >>>;
+    <<< "         5:45 - 6:30    Move to a very fast cycle during the next 15 seconds,", "" >>>; 
+    <<< "                        that speed for the rest of the phase", "" >>>;
     45::second => now;
     <<< " ", "" >>>;
-    <<< "     6:30 - 7:00    Quickly, move to any speed during the next 10 seconds, then hold that speed", "" >>>; 
-    <<< "                    for the rest of the phase", "" >>>;
+    <<< "         6:30 - 7:00    Move to any speed during the next 10 seconds, then", "" >>>; 
+    <<< "                        hold that speed for the rest of the phase, move your", "" >>>;
+    <<< "                        octave in either direction once, if you please", "" >>>;
     30::second => now;
     <<< " ", "" >>>;
-    <<< "     7:00 - 7:30    Quickly, move to a new speed during the next 5 seconds, then hold that speed", "" >>>;
-    <<< "                    for the rest of the phase, ", "" >>>;
+    <<< "         7:00 - 7:30    Move to a new speed during the next 5 seconds, then ", "" >>>;
+    <<< "                        hold that speed for the rest of the phase, move your", "" >>>;
+    <<< "                        your octave in either direction once, if you please", "" >>>;
     30::second => now;
     <<< " ", "" >>>;
-    <<< "     7:30 - 8:30    You have full control over the next minute", "" >>>;
+    <<< "         7:30 - 8:30    You have full control over the next minute", "" >>>;
     60::second => now;
     <<< " ", "" >>>;
-    <<< "     8:30 - 9:00    Move to a very slow speed, ponder your life choices", "" >>>;
+    <<< "         8:30 - 9:00    Move to a very slow speed, ponder your life choices", "" >>>;
     30::second => now;
 
     // fin
@@ -308,6 +328,8 @@ fun void score() {
 <<< " ", "" >>>; 
 <<< "    [a] - speed    [s] - envelope length    [d] - fundamental    [f] - octave", "" >>>; 
 <<< " ", "" >>>; 
-<<< "                              spacebar to begin", "" >>>;
+<<< "                   [spacebar] controls      [z] sine status", "" >>>; 
+<<< " ", "" >>>; 
+<<< "                            ~ spacebar to begin ~", "" >>>;
 
 input();
