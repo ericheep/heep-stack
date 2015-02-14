@@ -1,6 +1,6 @@
 public class LiSaSort {
     ArrayFunctions a;
-    4 => int modes;
+    6 => int modes;
     3 => int buffers;
     2 => int players;
     int buffer[modes][players];
@@ -11,12 +11,13 @@ public class LiSaSort {
 
     Pan2 left;
     Pan2 right;
-
+    LPF lp;
+    
     // intializing parameters
     for (int j; j < buffers; j++) {
         for (int i; i < modes; i++) {
             adc => mic[j][i][0] => env[j][i][0] => left;
-            adc => mic[j][i][1] => env[j][i][0] => right;
+            adc => mic[j][i][1] => env[j][i][1] => right;
             mic[j][i][0].loop(1);
             mic[j][i][1].loop(1);
             mic[j][i][0].bi(1);
@@ -24,13 +25,9 @@ public class LiSaSort {
         }
     }
 
-    // hard panning left and right
-    left.pan(-1.0);
-    right.pan(1.0);
-  
     // chucking to dac
-    left => dac;
-    right => dac;
+    left => dac.left;
+    right => dac.right;
 
     // switch arrays, one per player
     int active[modes][2];
@@ -150,14 +147,14 @@ public class LiSaSort {
 
     private int[] score(int idx) {
         if (idx == 3 || idx == 4 || idx == 5) return [1, 1];
-        if (idx == 6 || idx == 7 || idx == 8) return [2, 1];
-        if (idx == 9 || idx == 10 || idx == 11) return [3, 1];    
+        if (idx == 6 || idx == 7 || idx == 8) return [1, 1];
+        if (idx == 9 || idx == 10 || idx == 11) return [1, 1];    
         if (idx == 12 || idx == 13 || idx == 14) return [1, 2];    
-        if (idx == 15 || idx == 16 || idx == 17) return [2, 2];    
-        if (idx == 18 || idx == 19 || idx == 20) return [3, 2];    
+        if (idx == 15 || idx == 16 || idx == 17) return [1, 2];    
+        if (idx == 18 || idx == 19 || idx == 20) return [1, 2];    
         if (idx == 21 || idx == 22 || idx == 23) return [1, 3];    
-        if (idx == 24 || idx == 25 || idx == 26) return [2, 3];    
-        if (idx == 27 || idx == 28 || idx == 29) return [3, 3];    
+        if (idx == 24 || idx == 25 || idx == 26) return [1, 3];    
+        if (idx == 27 || idx == 28 || idx == 29) return [1, 3];    
         if (idx == 30 || idx == 31 || idx == 32) return [1, 4];    
         if (idx == 33 || idx == 34 || idx == 35) return [2, 4];    
         if (idx == 36 || idx == 37 || idx == 38) return [3, 4];    
@@ -170,25 +167,43 @@ public class LiSaSort {
         if (idx == 57 || idx == 58 || idx == 59) return [1, 7];    
         if (idx == 60 || idx == 61 || idx == 62) return [2, 7];    
         if (idx == 63 || idx == 64 || idx == 65) return [3, 7];    
-        else return [0, 0];
+        if (idx == 66 || idx == 67 || idx == 68) return [1, 6];    
+        if (idx == 69 || idx == 70 || idx == 71) return [2, 6];    
+        if (idx == 72 || idx == 73 || idx == 74) return [3, 6];    
+        if (idx == 75 || idx == 76 || idx == 77) return [1, 5];    
+        if (idx == 78 || idx == 79 || idx == 80) return [2, 5];    
+        if (idx == 81 || idx == 82 || idx == 83) return [3, 5];    
+        if (idx == 84 || idx == 85 || idx == 86) return [1, 4];    
+        if (idx == 87 || idx == 88 || idx == 89) return [2, 4];    
+        if (idx == 90 || idx == 91 || idx == 92) return [3, 4];    
+        if (idx == 93 || idx == 94 || idx == 95) return [1, 3];    
+        if (idx == 96 || idx == 97 || idx == 98) return [2, 3];    
+        if (idx == 99 || idx == 100 || idx == 101) return [3, 3];    
+        if (idx == 102 || idx == 103|| idx == 104) return [1, 3];    
+        if (idx == 105 || idx == 106|| idx == 107) return [2, 3];    
+        if (idx == 108 || idx == 109 || idx == 110) return [3, 3];    
+        if (idx >= 111 && idx < 120) return [3, 2];
+        if (idx >= 120 && idx < 129) return [3, 1];
+        if (idx >= 129 && idx < 138) return [2, 2];
+        if (idx >= 138 && idx < 147) return [2, 1];
+        if (idx >= 147 && idx < 156) return [1, 2];
+        else return [1, 1];
     }
 
     
     private void record(int mode, int mod, dur beat, int player, int dist) {
-        // a few vars
-        5 * (mode + 1) => int num;
-        
-        // exponential vars
-        dur y;
-        dur echoes[num]; 
 
         // allowed length of playblack
-        beat * (dist * 2) => dur length;
+        dur length;
 
-        // exp beat
-        length/(num * 1.0) => dur beat_time;
+        if (dist != 0) {
+            beat * (dist * 2) => length;
+        }
+        else {
+            beat => length;
+        }
 
-        // which buffer to record into, 3 per player
+        // which buffer to record into, 3 per player per mode
         buffer[mode][player] => int idx;
         
         // buffer, mode, player
@@ -196,15 +211,26 @@ public class LiSaSort {
             //<<< idx, "REC", "" >>>;
 
             // intializing LiSa to record
-            mic[idx][mode][player].duration(beat * dist);
-            mic[idx][mode][player].loop(1);
-            mic[idx][mode][player].bi(1);
+            mic[idx][mode][player].duration(beat * 2.0);
             mic[idx][mode][player].record(1);
             
             // rec time
             beat * 2.0 => now;
 
             mic[idx][mode][player].record(0);
+            mic[idx][mode][player].loopStart(0::samp);
+            mic[idx][mode][player].loopEnd(beat * 2.0);
+            mic[idx][mode][player].play(1);
+
+            mic[idx][mode][player].rampUp(beat);
+
+            env[idx][mode][player].keyOn();
+            env[idx][mode][player].set(10::ms, length - (beat * 2.0), 0.2, beat/16.0);
+            length - (beat * 2.0) => now;
+            mic[idx][mode][player].rampDown(beat);
+            env[idx][mode][player].keyOff();
+            beat => now;
+            mic[idx][mode][player].play(0);
         }
 
         score(idx)[0] => int recordings;
@@ -213,60 +239,28 @@ public class LiSaSort {
         1.0/voices => float pos;
 
         if (recordings > 0 && voices > 0) {
-            //<<< idx, "PLAY", "" >>>;
-
             for (int i; i < recordings; i++) {
                 env[i][mode][player].keyOn();
-                env[i][mode][player].set(10::ms, length - beat/8.0, 0.2, beat/8.0);
+                env[i][mode][player].set(20::ms, length - beat/8.0, 0.2, beat/16.0);
                 for (int j; j < voices; j++) {
                     mic[i][mode][player].loopStart(j, 0::samp);
                     mic[i][mode][player].loopEnd(j, beat * 2.0);
                     mic[i][mode][player].playPos(j, j * (beat * 2.0) * pos);
                     mic[i][mode][player].play(j, 1);
-                    mic[i][mode][player].rampUp(j, beat/8.0);
                 }
             }
             length  - beat/8.0 => now;
             for (int i; i < recordings; i++) {
                 env[i][mode][player].keyOff();
-                for (int j; j < voices; j++) {
-                    mic[i][mode][player].rampDown(j, beat/8.0);
-                }
             }
-            beat/8.0 => now;
+            beat/16.0 => now;
             for (int i; i < recordings; i++) {
                 for (int j; j < voices; j++) {
                     mic[i][mode][player].play(j, 0);
                 }
             }
         }
-
+        
         buffer[mode][player]++;
-        /*
-        // builds our exponential array
-        for (int i; i < num; i++) {
-            Math.pow(Math.pow((1 + num),(1.0/num)), i + 1) - 1 => float beat;
-            beat * beat_time => dur x;
-            x - y => echoes[i];
-            beat * beat_time => y;
-        }
-
-        // exponential decay
-        if (mode == 0 || mode == 1 || mode == 2) {
-            echoes[num - 1]/3.0 => now;
-            mic[mode][player].record(1); 
-            echoes[num - 1]/3.0 * 2.0 => now;
-            mic[mode][player].record(0);
-            mic[mode][player].play(1);
-            for (num - 2 => int i; i >= 0; i--) {
-                mic[mode][player].playPos(0::samp);
-                mic[mode][player].rampUp(echoes[i]/6.0);
-                echoes[i] - echoes[i]/6.0 => now;
-                mic[mode][player].rampDown(echoes[i]/6.0);
-                echoes[i]/6.0 => now;
-            }
-            mic[mode][player].play(0);
-        }
-        */
     }
 }
