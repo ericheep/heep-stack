@@ -225,11 +225,11 @@ public class LiSaSort {
             mic[idx][mode][player].rampUp(beat);
 
             env[idx][mode][player].keyOn();
-            env[idx][mode][player].set(10::ms, length - (beat * 2.0), 0.2, beat/16.0);
-            length - (beat * 2.0) => now;
+            env[idx][mode][player].set(10::ms, length - (beat * 2.0), 0.2, beat * 2.0);
+            length - (beat * 4.0) => now;
             mic[idx][mode][player].rampDown(beat);
             env[idx][mode][player].keyOff();
-            beat => now;
+            beat * 2.0 => now;
             mic[idx][mode][player].play(0);
         }
 
@@ -237,11 +237,18 @@ public class LiSaSort {
         score(idx)[1] => int voices;
 
         1.0/voices => float pos;
+        dur decay;
+        if ((length - beat/8.0) > 0::samp) {
+            length - beat/8.0 => decay;
+        }
+        else {
+            beat => decay;
+        }
 
         if (recordings > 0 && voices > 0) {
             for (int i; i < recordings; i++) {
                 env[i][mode][player].keyOn();
-                env[i][mode][player].set(20::ms, length - beat/8.0, 0.2, beat/16.0);
+                env[i][mode][player].set(20::ms, decay, 0.2, beat/16.0);
                 for (int j; j < voices; j++) {
                     mic[i][mode][player].loopStart(j, 0::samp);
                     mic[i][mode][player].loopEnd(j, beat * 2.0);
@@ -249,7 +256,7 @@ public class LiSaSort {
                     mic[i][mode][player].play(j, 1);
                 }
             }
-            length  - beat/8.0 => now;
+            decay => now;
             for (int i; i < recordings; i++) {
                 env[i][mode][player].keyOff();
             }

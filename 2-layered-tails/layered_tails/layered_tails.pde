@@ -37,8 +37,6 @@ boolean sketchFullScreen() {
   return true;
 }
 
-
-
 // setting OSC
 OscP5 oscP5;
 NetAddress myRemoteLocation;
@@ -161,11 +159,12 @@ void exAdd(float add) {
 // main loop
 void draw() {
   noStroke();
-  fill(0, 0, 0, 250);
+  fill(0, 0, 0, 20);
   rect(0, 0, width, height);
   exAdd(0.2);
   strokeWeight(3);
   stroke(0, 360, 360);
+  //d.graph();
   g[0].score(t_max_l, t_size_l, t_l, t_ref_l, t_beat, t_side, t_ex_l);
   g[1].score(t_max_r, t_size_r, t_r, t_ref_r, t_beat, t_side, t_ex_r);
   g[2].score(b_max_l, b_size_l, b_l, b_ref_l, b_beat, b_side, b_ex_l);

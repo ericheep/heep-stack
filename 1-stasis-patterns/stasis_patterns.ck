@@ -8,12 +8,13 @@ CalorkOsc c;
 
 // set your sending address
 c.myAddr("/eric");
-//10.0.0.8
+//Eric's IP ~ 10.0.0.2
 
 // add one IP and address at a time, two string arguments
-c.addIp("10.0.0.3", "/ed");
-c.addIp("10.0.0.7", "/justin");
-c.addIp("10.0.0.1", "/danny");
+c.addIp("10.0.0.4", "/shaurjya");
+c.addIp("10.0.0.8", "/justin");
+c.addIp("10.0.0.5", "/danny");
+c.addIp("10.0.0.6", "/ed");
 
 // you'll have to setup your parameters as an array of strings
 c.setParams(["/g", "/s", "/l", "/f", "/o"]);

@@ -1,13 +1,32 @@
 SndBuf apollo;
-apollo.read(me.dir() + "apollo11saturnVaudio.wav");
-apollo.rate(1.0);
-
 apollo => Gain headphones => dac.chan(5);
+
+// starting the piece with spacebar
+Hid hi;
+HidMsg msg;
+if (!hi.openKeyboard(0)) me.exit();
+
+int begin;
+
+fun void hereWeGo() {
+    while (begin == 0) {
+        hi => now;
+        while (hi.recv(msg)) {
+            if (msg.isButtonDown()) {
+                if (msg.ascii == 32 && begin == 0) {
+                    apollo.read(me.dir() + "apollo11saturnVaudio.wav");
+                    1 => begin;
+                    <<< "~ here we go ~", "" >>>;
+                }
+            }
+        }
+    }
+}
 
 // midi control
 NanoKontrol n;
 Quneo q;
-<<< "~ here we go ~", "" >>>;
+<<< "- press spacebar to begin -", "">>>;
 
 // Nano
 // 0, 1, lc
@@ -400,17 +419,31 @@ fun void mParams() {
         }
     }
     for (int i; i < m_num; i++) {
+        if (sm_lock) {
+            q.led(144, m_q[i] * 2, 127);
+            if (m_latch[i]) {
+                q.led(144, m_q[i] * 2 + 1, 127);
+            }
+        }
         if (q.pad[m_q[i]] > 0 && m_latch[i] == 0) {
             m[i].gain(q.pad[m_q[i]]/127.0);
             m[i].loop(1); 
             1 => m_latch[i];
         }
-        if (q.pad[m_q[i]] == 0 && m_latch[i]) {
-            m[i].loop(0);
-            0 => m_latch[i];
+        if (sm_lock == 0) {
+            if (q.pad[m_q[i]] == 0 && m_latch[i]) {
+                m[i].loop(0);
+                0 => m_latch[i];
+            }
         }
     }
     for (int i; i < sm_num; i++) {
+        if (sm_lock) {
+            q.led(144, sm_q[i] * 2, 127);
+            if (sm_latch[i]) {
+                q.led(144, sm_q[i] * 2 + 1, 127);
+            }
+        }
         if (q.pad[sm_q[i]] > 0 && sm_latch[i] == 0) {
             sm[i].micVol(q.pad[sm_q[i]]/127.0);
             sm[i].loop(1);
@@ -426,9 +459,27 @@ fun void mParams() {
     if (q.stop > 0 && sm_lock_latch == 0) {
         (sm_lock + 1) % 2 => sm_lock;
         1 => sm_lock_latch; 
+        if (sm_lock == 0) {
+            for (int i; i < 32; i++) {
+                q.led(144, i, 0);
+            }
+        }
     }
     if (q.stop == 0 && sm_lock_latch) {
         0 => sm_lock_latch;
+    }
+}
+
+// main loop
+fun void params() {
+    while (true) {
+        lcParams();
+        rParams();
+        fnParams();
+        sParams();
+        gParams();
+        mParams();
+        10::ms => now;
     }
 }
 
@@ -441,14 +492,7 @@ spork ~ lcSpin(1);
 spork ~ rSpin();
 spork ~ fnSpin();
 spork ~ gSpin();
+spork ~ hereWeGo();
+params();
 
-// main loop
-while (true) {
-    lcParams();
-    rParams();
-    fnParams();
-    sParams();
-    gParams();
-    mParams();
-    10::ms => now;
-}
+
